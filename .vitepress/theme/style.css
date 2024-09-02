@@ -178,7 +178,27 @@
 } 
 
 .clip {
+  animation-name: identifier;
+  animation-iteration-count: infinite;
+  animation-duration: 2s;
+  animation-direction: alternate;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: unset !important;
+}
+
+.image-bg {
+  animation-name: identifier;
+  animation-iteration-count: infinite;
+  animation-duration: 2s;
+  animation-direction: alternate;
+}
+
+@keyframes identifier {
+  from {
+    background-position: left top;
+  }
+  to {
+    background-position: right bottom;
+  }
 }
