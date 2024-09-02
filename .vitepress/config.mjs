@@ -3,7 +3,7 @@ import { set_nav_and_sidebar } from "../utils/auto_siderbar_nav.mjs";	// 改成�
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  base: "/docs-luoye-space/",
+  // base: "/docs-luoye-space/",
   lang: "cn",
   title: "小落叶的个人知识库",
   description: "A VitePress Site",
