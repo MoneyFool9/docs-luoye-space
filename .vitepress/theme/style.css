@@ -176,3 +176,9 @@
   padding-top: 24px;
   border: none;
 } 
+
+.clip {
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: unset !important;
+}
