@@ -13,11 +13,11 @@ export const textAndIndexMap = {
     'ES6': { name: 'ES6', index: 1999 },
     'Vue': { name: 'Vue', index: 1500 },
     'React': { name: 'React', index: 1400 },
-    'interview': { name: '面试', index: 1300 },
+    // 'interview': { name: '面试', index: 1300 },
     'next-front-end': { name: '前端进阶', index: 1000 },
     'bugfix': { name: 'BUG解决方案', index: 666 },
-    'read': { name: '读书笔记', index: 555 },
-    'some-library': { name: '一些库', index: 444 },
+    // 'read': { name: '读书笔记', index: 555 },
+    // 'some-library': { name: '一些库', index: 444 },
   
     // problems的子目录
     'algorithm': { name: '算法', index: 1000 },

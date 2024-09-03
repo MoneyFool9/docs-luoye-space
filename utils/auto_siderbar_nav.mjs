@@ -90,8 +90,10 @@ function getNav(files, dirPath, entry) {
                     // console.log(result[index + 1].items[0].link);
                 } else {
                   // 如果不是目录，直接呈现以文档形式
-                  result[index + 1].items && delete result[index + 1].items
-                  result[index + 1].link = `/${entry}/${element}/${child}`
+                  if(result[index + 1].items === ''){
+                    delete result[index + 1].items;
+                  }
+                  result[index + 1].link = `/${entry}/${element}/${child}`;
                   // console.log(result[index + 1].link);
                 }
             });
