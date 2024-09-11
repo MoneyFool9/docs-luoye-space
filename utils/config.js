@@ -2,8 +2,6 @@
 export const textAndIndexMap = {
     // 根目录
     'front-end': { name: '前端', index: 1000 },
-    'spider': { name: '爬虫', index: 999 },
-    'software-test': { name: '软件测试', index: 996 },
     'fundamental-concept': { name: '基础概念', index: 666 },
     'problems': { name: '问题', index: 555 },
     'temp': { name: '施工中', index: 0 },
@@ -23,14 +21,10 @@ export const textAndIndexMap = {
     'algorithm': { name: '算法', index: 1000 },
     'lanqiao': { name: '蓝桥杯', index: 900 },
   
-    // spider的子目录
-    'reverse-engineering': { name: '逆向工程', index: 2000 },
+   
   
     // Vue目录下的文件
-    '技术复盘': {name: '技术复盘', index: 2000},
-    '语法点': {name: '语法点', index: 1000},
-    'Vue.js 设计与实现': {name: 'Vue.js 设计与实现', index: 999},
-    'Vue源码解读': {name: 'Vue源码解读', index: 666}
+    
   }
   
   // 替换名字的textMap
