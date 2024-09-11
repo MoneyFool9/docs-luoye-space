@@ -50,7 +50,7 @@ git clean -n       新增档案
 
 git clean -f
 
-git checkout —<filename>   加入追踪
+git checkout —(filename)   加入追踪
 
 git reset HEAD      加入索引
 
@@ -66,7 +66,7 @@ git branch <分支>
 
 Branch 就像是便利贴，他会贴在commit位置上
 
-git checkout <分支>  <HEAD>前往对应分支
+git checkout <分支>  (HEAD)前往对应分支
 
 分支快转
 
@@ -88,15 +88,15 @@ Git游戏演练：learngitbranching.js.org
 
 git reset HEAD^^(后退两个版本)
 
-git checkout <commit编码>  移动HEAD到某某个commit
+git checkout (commit编码)  移动HEAD到某某个commit
 
 git revert HEAD  产生c1’
 
 git reset HEAD^ —hard 彻底回退 
 
-git reflog <commit编号> —hard观看详细历史记录
+git reflog (commit编号) —hard观看详细历史记录
 
-Git 向GitHub发送PR请求流程<Pull Request>
+Git 向GitHub发送PR请求流程(Pull Request)
 
 git pull   
 
