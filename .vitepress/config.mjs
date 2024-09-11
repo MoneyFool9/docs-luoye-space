@@ -4,92 +4,36 @@ import { set_nav_and_sidebar } from "../utils/auto_siderbar_nav.mjs";	// 改成�
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   // base: "/docs-luoye-space/",
-  lang: "cn",
+  lang: 'zh-CN',
   title: "小落叶的个人知识库",
   description: "A VitePress Site",
   head: [["link", {rel: "icon", href: "/logo.svg"}]],
   themeConfig: {
     outlineTitle: "文章目录",
     outline: [2, 6],
-    // outline: "deep",
-    // https://vitepress.dev/reference/default-theme-config
     logo: "logo.svg", // 配置logo位置，public目录
-    // 顶部导航栏配置
-    // nav: [
-    //   {
-    //     text: "首页",
-    //     link: "/",
-    //   },
-    //   {
-    //     text: "前端",
-    //     items: [{ text: "React", link: "/docs/front-end/react" }],
-    //   },
-    //   {
-    //     text: "后端",
-    //     items: [
-    //       {
-    //         text: "SpringBoot集成各种技术",
-    //         link: "/docs/back-end/integrate-tech",
-    //       },
-    //       { text: "RabbitMQ", link: "/docs/back-end/rabbitmq" },
-    //       { text: "ElasticSearch", link: "/docs/back-end/elasticsearch" },
-    //       { text: "Mybatis-Plus", link: "/docs/back-end/mybatis-plus" },
-    //       { text: "SpringBoot项目模版", link: "/docs/back-end/springboot-template" },
-    //     ],
-    //   },
-    //   {
-    //     text: "Python",
-    //     items: [
-    //       { text: "基础语法", link: "/docs/python/base" },
-    //       { text: "爬虫", link: "/docs/python/spider" },
-    //     ],
-    //   },
-    //   {
-    //     text: "数学建模",
-    //     items: [
-    //       { text: "数据分析三剑客", link: "/docs/math-model/data-ana" },
-    //       { text: "评价类模型", link: "/docs/math-model/eval" },
-    //       { text: "预测类模型", link: "/docs/math-model/forecast" },
-    //       { text: "优化类模型", link: "/docs/math-model/optimize" },
-    //       { text: "分类模型", link: "/docs/math-model/classify" },
-    //     ],
-    //   },
-    //   {
-    //     text: "爬虫案例",
-    //     items: [
-    //       { text: "B站刷播放量接口", link: "/docs/spiders/Bilibili" },
-    //       { text: "某练通爬取", link: "/docs/spiders/dlt" },
-    //       { text: "中考移民问题", link: "/docs/spiders/middle_exam" },
-    //     ],
-    //   },
-    //   {
-    //     text: "教程",
-    //     items: [
-    //       {
-    //         text: "Electron+Vue3项目打包",
-    //         link: "/docs/Tutorial/electron_package",
-    //       },
-    //       { text: "VitePress搭建和部署", link: "/docs/Tutorial/vitepress" },
-    //     ],
-    //   },
-    //   {
-    //     text: "其他",
-    //     items: [
-    //       { text: "Git", link: "/docs/其他/git" },
-    //       { text: "Docker", link: "/docs/tools/docker" },
-    //       { text: "iTime软件使用说明书", link: "/docs/tools/iTime_docs" },
-    //       { text: "常用图标", link: "/docs/tools/icons" },
-    //       { text: "小知识", link: "/docs/tools/tips" },
-    //     ],
-    //   },
-    // ],
-    // 侧边栏配置，这个函数自动生成侧边栏
-    // sidebar: { "/docs": set_sidebar("docs") },
+     // 文章翻页
+     docFooter: {
+      prev: '上一篇',
+      next: '下一篇'
+    },
+
+    // 移动端 - 外观
+    darkModeSwitchLabel: '外观',
+
+    // 移动端 - 返回顶部
+    returnToTopLabel: '返回顶部',
+
+    // 移动端 - menu
+    sidebarMenuLabel: '菜单',
+
+    
+
     ...set_nav_and_sidebar(),
 
     // navbar: true, //开启导航栏，我设置成false也没啥用不知道为啥
     // sidebar: false, // 关闭侧边栏
-    lastUpdated: true, // 显示上次修改时间
+    // lastUpdated: true, // 显示上次修改时间
     // aside: "left", // 设置右侧侧边栏在左侧显示
     // 社交链接，内置的都是国外的，国内只能通过svg设置
     socialLinks: [
@@ -108,8 +52,6 @@ export default defineConfig({
       },
     ],
     // 底部配置
-    prev: '上一篇',
-    next: '下一篇',
     footer: {
       copyright: "Copyright@ 2024 Luoye Zero",
     },
