@@ -20,6 +20,7 @@ export const textAndIndexMap = {
   
     //big-front-end的子目录
     'wx-miniprogram': {name: '微信小程序', index: 2000},
+    'uniapp': {name: 'uniapp', index: 1999},
 
     // problems的子目录
     'algorithm': { name: '算法', index: 1000 },
