@@ -18,6 +18,9 @@ export const textAndIndexMap = {
     // 'read': { name: '读书笔记', index: 555 },
     // 'some-library': { name: '一些库', index: 444 },
   
+    //big-front-end的子目录
+    'wx-miniprogram': {name: '微信小程序', index: 2000},
+
     // problems的子目录
     'algorithm': { name: '算法', index: 1000 },
     'lanqiao': { name: '蓝桥杯', index: 900 },
