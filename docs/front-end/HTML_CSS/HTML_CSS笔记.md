@@ -71,7 +71,7 @@
 <a href="#tips">访问</a>
 ```
 
-- <img - border> 边框
+- `<img - border>` 边框
 - 连接到邮箱
 
 ```html
@@ -84,7 +84,7 @@
 
 头部
 
-- <base> 标签描述了基本的链接地址/链接目标，该标签作为HTML文档中所有的链接标签的默认链接:
+- `<base>` 标签描述了基本的链接地址/链接目标，该标签作为HTML文档中所有的链接标签的默认链接:
 - `<link>` 标签定义了文档与外部资源之间的关系。
 - `<style>` 标签定义了HTML文档的样式文件引用地址.
 - `<meta>` 标签提供了元数据.元数据也不显示在页面上，但会被浏览器解析。
@@ -119,7 +119,7 @@ p {color:blue;}
 
 - src  —source
 - Alt属性—-alt 属性用来为图像定义一串预备的可替换的文本。在浏览器无法载入图像时，替换文本属性告诉读者她们失去的信息。
-- <map>  <area>  align属性
+- `<map>`  `<area>`  align属性
 - style float   浮动
 
 ```html
@@ -144,7 +144,7 @@ p {color:blue;}
 - **tr**：tr 是 table row 的缩写，表示表格的一行。
 - **td**：td 是 table data 的缩写，表示表格的数据单元格。
 - **th**：th 是 table header的缩写，表示表格的表头单元格。
-- <caption>
+- `<caption>`
 
 ![Untitled](https://ly57-pics-bed.oss-cn-guangzhou.aliyuncs.com/img/Untitled%201.png)
 
