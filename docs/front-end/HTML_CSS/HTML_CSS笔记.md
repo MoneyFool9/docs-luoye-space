@@ -777,7 +777,7 @@ body{
 
 ![Untitled](https://ly57-pics-bed.oss-cn-guangzhou.aliyuncs.com/img/Untitled%2043.png)
 
-![Untitled](HTML%20CSS%204acfd67486b4421db301d8fbd2904309/Untitled%2044.png)
+![Untitled](https://ly57-pics-bed.oss-cn-guangzhou.aliyuncs.com/img/Untitled%2044.png)
 
 （被(直接)父元素直接带走？不脱离文档流。 限制在父元素content区域）
 
