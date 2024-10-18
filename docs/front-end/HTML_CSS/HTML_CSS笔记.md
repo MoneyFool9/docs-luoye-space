@@ -210,7 +210,7 @@ JavaScript 使 HTML 页面具有更强的动态和交互性。
 
 实体字符
 
-![Untitled](HTML%20CSS%204acfd67486b4421db301d8fbd2904309/Untitled%205.png)
+![Untitled](https://ly57-pics-bed.oss-cn-guangzhou.aliyuncs.com/img/Untitled%205.png)
 
 URL
 
