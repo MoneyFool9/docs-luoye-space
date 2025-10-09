@@ -2,9 +2,9 @@
 export const textAndIndexMap = {
     // 根目录
     'front-end': { name: '前端', index: 1000 },
-    'big-front-end': { name: '大前端', index: 888 },
-    'fundamental-concept': { name: '基础概念', index: 666 },
-    'dataStruct_algo': { name: '算法', index: 555 },
+    'external_ability': { name: '综合能力', index: 888 },
+    'system_develop': { name: '系统开发', index: 666 },
+    'dataStruct_algo': { name: '数据结构与算法', index: 555 },
     'temp': { name: '施工中', index: 0 },
   
     // front-end的子目录
