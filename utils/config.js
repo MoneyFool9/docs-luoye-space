@@ -20,7 +20,7 @@ export const textAndIndexMap = {
     // 'read': { name: '读书笔记', index: 555 },
     'some-library': { name: '一些库', index: 444 },
   
-    //big-front-end的子目录
+    //external_ability的子目录
     'wx-miniprogram': {name: '微信小程序', index: 2000},
     'uniapp': {name: 'uniapp', index: 1999},
     'nodejs': {name: 'node.js学习', index: 1999},
@@ -31,8 +31,11 @@ export const textAndIndexMap = {
   
    
   
-    // Vue目录下的文件
+    // Vue目录下的子目录
     
+
+    // system_develop的子目录
+    'best_practices': { name: '最佳实践', index: 2000 },
   }
   
   // 替换名字的textMap
