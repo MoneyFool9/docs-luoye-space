@@ -1,14 +1,39 @@
 import { defineConfig } from 'vitepress'
-import { set_nav_and_sidebar } from "../utils/auto_siderbar_nav.mjs";	// 改成自己的路径
+import { set_nav_and_sidebar } from "../utils/auto_siderbar_nav.mjs";
+import { saveDocStats } from "../utils/doc_stats.mjs";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  // 环境变量定义，用于Dify配置
+  define: {
+    'import.meta.env.VITE_DIFY_ENABLED': JSON.stringify(process.env.VITE_DIFY_ENABLED ?? 'true'),
+    'import.meta.env.VITE_DIFY_API_KEY': JSON.stringify(process.env.VITE_DIFY_API_KEY ?? ''),
+    'import.meta.env.VITE_DIFY_BASE_URL': JSON.stringify(process.env.VITE_DIFY_BASE_URL ?? 'https://api.dify.ai/v1'),
+  },
   // base: "/docs-luoye-space/",
   lang: 'zh-CN',
   title: "小落叶的个人知识库",
   description: "A VitePress Site",
   head: [["link", {rel: "icon", href: "/logo.svg"}]],
+  
+  // 构建钩子：在构建结束时生成统计信息
+  buildEnd: async (config) => {
+    saveDocStats('.vitepress/dist/doc-stats.json');
+  },
+  
+  // 忽略死链接检查
+  ignoreDeadLinks: true,
+  
   themeConfig: {
+    // 最后更新时间配置
+    lastUpdated: {
+      text: '最后更新于',
+      formatOptions: {
+        dateStyle: 'full',
+        timeStyle: 'short'
+      }
+    },
+    
     outlineTitle: "文章目录",
     outline: [2, 6],
     logo: "logo.svg", // 配置logo位置，public目录

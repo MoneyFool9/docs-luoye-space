@@ -26,3 +26,8 @@ features:
     details: 个人理解须辩证看待，欢迎联系作者讨论
 ---
 
+<script setup>
+import DocStats from './.vitepress/theme/components/DocStats.vue'
+</script>
+
+<DocStats />
