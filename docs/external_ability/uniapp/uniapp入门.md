@@ -1,6 +1,6 @@
 # 第一个uniapp应用
 
-![image-20241018174649316](/Users/apple/Library/Application Support/typora-user-images/image-20241018174649316.png)
+![image-20241018174649316](https://ly57-pics-bed.oss-cn-guangzhou.aliyuncs.com/img/image-20241018174649316.png)
 
 ## uniapp语法入门
 
@@ -49,9 +49,150 @@
 
 #### II -页面生命周期
 
+https://uniapp.dcloud.net.cn/tutorial/page.html#lifecycle
 
+![img](https://ly57-pics-bed.oss-cn-guangzhou.aliyuncs.com/img/uni-app-lifecycle-vue3.jpg)
+
+1. uni-app框架，首先根据pages.json的配置，创建页面
+2. 根据页面template里的组件，创建dom。
+3. 触发onLoad  ---onLoad比较适合的操作是：接受上页的参数，联网取数据，更新data。
+4. 转场动画开始
+5. 页面onReady  ---onReady后，页面元素就可以自由操作了，比如ref获取节点。同时首批界面也渲染了。
+6. 转场动画结束
 
 #### III -页面配置文件
+
+[点击到官网文档](https://uniapp.dcloud.net.cn/collocation/pages.html)
+
+`page.json` 配置页面路由
+
+- `globalStyle`   全局样式配置，主要配置navigationBar的样式
+- `pages`  配置页面路由也可以配置单一页面的相关样式和逻辑
+
+```json
+{
+  "pages": [{
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "首页",//设置页面标题文字
+        "enablePullDownRefresh":true//开启下拉刷新
+      }
+    },
+    ...
+  ]
+}
+```
+
+- `tabBar`  配置底部tab栏部分，配置`list` 选项，将页面设置成tabBar页面
+
+```json
+{
+	"pages": [{
+		"path": "pages/component/index",
+		"style": {
+			"navigationBarTitleText": "组件"
+		}
+	}, {
+		"path": "pages/API/index",
+		"style": {
+			"navigationBarTitleText": "接口"
+		}
+	}, {
+		"path": "pages/component/view/index",
+		"style": {
+			"navigationBarTitleText": "view"
+		}
+	}],
+	"condition": { //模式配置，仅开发期间生效
+		"current": 0, //当前激活的模式（list 的索引项）
+		"list": [{
+			"name": "test", //模式名称
+			"path": "pages/component/view/index" //启动页面，必选
+		}]
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "演示",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8",
+		"usingComponents":{
+			"collapse-tree-item":"/components/collapse-tree-item"
+		},
+		"renderingMode": "seperated", // 仅微信小程序，webrtc 无法正常时尝试强制关闭同层渲染
+		"pageOrientation": "portrait", //横屏配置，全局屏幕旋转设置(仅 APP/微信/QQ小程序)，支持 auto / portrait / landscape
+		"rpxCalcMaxDeviceWidth": 960,
+		"rpxCalcBaseDeviceWidth": 375,
+		"rpxCalcIncludeWidth": 750
+	},
+	"tabBar": {
+		"color": "#7A7E83",
+		"selectedColor": "#3cc51f",
+		"borderStyle": "black",
+		"backgroundColor": "#ffffff",
+		"height": "50px",
+		"fontSize": "10px",
+		"iconWidth": "24px",
+		"spacing": "3px",
+    	"iconfontSrc":"static/iconfont.ttf", // app tabbar 字体.ttf文件路径 app 3.4.4+
+		"list": [{
+			"pagePath": "pages/component/index",
+			"iconPath": "static/image/icon_component.png",
+			"selectedIconPath": "static/image/icon_component_HL.png",
+			"text": "组件",
+      		"iconfont": { // 优先级高于 iconPath，该属性依赖 tabbar 根节点的 iconfontSrc
+       			"text": "\ue102",
+        		"selectedText": "\ue103",
+        		"fontSize": "17px",
+        		"color": "#000000",
+        		"selectedColor": "#0000ff"
+      		}
+		}, {
+			"pagePath": "pages/API/index",
+			"iconPath": "static/image/icon_API.png",
+			"selectedIconPath": "static/image/icon_API_HL.png",
+			"text": "接口"
+		}],
+		"midButton": {
+			"width": "80px",
+			"height": "50px",
+			"text": "文字",
+			"iconPath": "static/image/midButton_iconPath.png",
+			"iconWidth": "24px",
+			"backgroundImage": "static/image/midButton_backgroundImage.png"
+		}
+	},
+  "easycom": {
+    "autoscan": true, //是否自动扫描组件
+    "custom": {//自定义扫描规则
+      "^uni-(.*)": "@/components/uni-$1.vue"
+    }
+  },
+  "topWindow": {
+    "path": "responsive/top-window.vue",
+    "style": {
+      "height": "44px"
+    }
+  },
+  "leftWindow": {
+    "path": "responsive/left-window.vue",
+    "style": {
+      "width": "300px"
+    }
+  },
+  "rightWindow": {
+    "path": "responsive/right-window.vue",
+    "style": {
+      "width": "300px"
+    },
+    "matchMedia": {
+      "minWidth": 768
+    }
+  }
+}
+
+```
+
+
 
 ### 1.3【基本内置组件】
 
@@ -224,7 +365,61 @@
 
 ### 1.4【uniapp全局配置文件和API调用】
 
+全局page.json文件配置
 
+https://uniapp.dcloud.net.cn/collocation/pages.html
+
+manifest.json 应用配置
+
+提供相关的应用信息和配置信息，对于不同端的应用会有差异。
+
+##### API：`uni.showToast`
+
+
+
+
+
+##### API：`uni.showLoading
+
+
+
+##### API：`uni.showModal`
+
+
+
+##### API：`uni.showActionSheet`
+
+
+
+##### API：`uni.setTabBarBadge`
+
+
+
+##### API：`uni.showTabBarRedDot`
+
+
+
+##### API：`uni.showToast`
+
+
+
+##### API：`uni.navigateTo`
+
+
+
+##### API：`getCurrentPages()`
+
+
+
+##### 页面路由API
+
+https://uniapp.dcloud.net.cn/api/router.html#navigateto
+
+##### storageSync数据缓存API
+
+https://uniapp.dcloud.net.cn/api/storage/storage.html#setstorage
+
+##### 使用`uni.request` 来发起网络请求获取数据
 
 ## uniapp中的Vue3基础
 
@@ -786,7 +981,7 @@ function buttonClick() {
 
 作用域插槽：往插槽传props，使用v-slot指令接收一个props对象
 
-![image-20241023174448139](https://ly57-pics-bed.oss-cn-guangzhou.aliyuncs.com/img/image-20241023174448139.png)
+<img src="https://ly57-pics-bed.oss-cn-guangzhou.aliyuncs.com/img/image-20241023174448139.png" alt="image-20241023174448139" style="zoom:80%;" />
 
 #### V -使用 `defineExpose` 暴露组件当中的属性和方法
 
@@ -832,13 +1027,87 @@ defineExpose({
 
 ### 2.5【依赖注入和异步组件】
 
-> 使用场景：
+##### ①依赖注入`provide`和`inject`
+
+> 使用场景：  **解决props逐级透传问题**
 >
 > 通常情况下，当我们需要从父组件向子组件传递数据时，会使用 props。想象一下这样的结构：有一些多层级嵌套的组件，形成了一棵巨大的组件树，而某个深层的子组件需要一个较远的祖先组件中的部分数据。在这种情况下，如果仅使用 props 则必须将其沿着组件链逐级传递下去，这会非常麻烦![image-20241023121555342](https://ly57-pics-bed.oss-cn-guangzhou.aliyuncs.com/img/image-20241023121555342.png)
 >
 > `provide` 和 `inject` 可以帮助我们解决这一问题 。一个父组件相对于其所有的后代组件，会作为**依赖提供者**。任何后代的组件树，无论层级有多深，都可以**注入**由父组件提供给整条链路的依赖。![image-20241023121623443](https://ly57-pics-bed.oss-cn-guangzhou.aliyuncs.com/img/image-20241023121623443.png)
 
+1. 父组件使用`provide()` 注册依赖，提供两个参数，一个是依赖名，一个是注入的数据。这个数据可以是任意类型。
+2. 子组件使用`inject()` 来声明拿到依赖注入的数据
+3. 在子组件中调用声明注入的数据即可
 
+```js
+/************* 祖先组件 ***************/
+import Child from './Child.vue'
+import { ref,reactive,provide } from "vue";
+// 数据
+let money = ref(100)
+let car = reactive({
+brand:'奔驰',
+price:100
+})
+// 用于更新money的方法
+function updateMoney(value:number){
+money.value += value
+}
+// 提供数据
+provide('moneyContext',{money,updateMoney})
+provide('car',car)
+
+/************** 后代组件 ***************/
+import { inject } from 'vue';
+  // 注入数据
+let {money,updateMoney} = inject('moneyContext',{money:0,updateMoney:(x:number)=>{}})
+let car = inject('car')
+```
+
+##### ②异步组件(AsyncComponent)
+
+> 在大型项目中，我们可能需要拆分应用为更小的块，并仅在需要时再从服务器加载相关组件。Vue 提供了 [`defineAsyncComponent`](https://cn.vuejs.org/api/general.html#defineasynccomponent) 方法来实现此功能
+
+```js
+import { defineAsyncComponent } from 'vue'
+
+const AsyncComp = defineAsyncComponent(() => {
+  return new Promise((resolve, reject) => {
+    // ...从服务器获取组件
+    resolve(/* 获取到的组件 */)
+  })
+})
+// ... 像使用其他一般组件一样使用 `AsyncComp`
+
+import { defineAsyncComponent } from 'vue'
+
+const AsyncComp = defineAsyncComponent(() =>
+  import('./components/MyComponent.vue')    //使用ES模块动态导入
+)
+
+app.component('MyComponent', defineAsyncComponent(() =>          //全局注册异步组件
+  import('./components/MyComponent.vue')
+))
+
+
+const AsyncComp = defineAsyncComponent({
+  // 加载函数
+  loader: () => import('./Foo.vue'),
+
+  // 加载异步组件时使用的组件
+  loadingComponent: LoadingComponent,
+  // 展示加载组件前的延迟时间，默认为 200ms
+  delay: 200,
+
+  // 加载失败后展示的组件
+  errorComponent: ErrorComponent,
+  // 如果提供了一个 timeout 时间限制，并超时了
+  // 也会显示这里配置的报错组件，默认值是：Infinity
+  timeout: 3000
+})
+```
+
+`defineAsyncComponent` 方法接收一个返回 Promise 的加载函数。这个 Promise 的 `resolve` 回调方法应该在从服务器获得组件定义时调用。你也可以调用 `reject(reason)` 表明加载失败。
 
 
 

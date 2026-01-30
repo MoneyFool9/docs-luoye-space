@@ -206,3 +206,10 @@
     background-position: right bottom;
   }
 }
+
+/**
+ * Component: Dify AI Assistant
+ * --------------------------------------------------------------------------
+ * Dify AI助手相关样式已在DifyChat.vue组件中通过scoped样式定义
+ * 这里可以添加全局样式调整（如需要）
+ */
