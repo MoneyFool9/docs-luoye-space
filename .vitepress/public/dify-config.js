@@ -1,11 +1,13 @@
 // Dify AI助手配置
 // 此配置会被注入到全局window对象中
 window.difyConfig = {
-  // 是否启用Dify功能（可通过环境变量控制）
+  // 是否启用Dify功能
   enabled: true,
   
   // Dify API配置
-  apiKey: '', // 将在运行时从环境变量注入
+  // 使用 App Token（在 Dify 后台 -> 应用 -> API访问 获取）
+  // App Token 以 "app-" 开头，可在 Dify 后台配置域名白名单
+  token: '', // 将在构建时从环境变量注入，或直接填写
   baseUrl: 'https://api.dify.ai/v1',
   
   // 聊天设置

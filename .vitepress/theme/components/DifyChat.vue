@@ -196,12 +196,26 @@ const config = ref({
   chatSettings: {},
   uiSettings: {}
 })
-const apiKey = ref('')
+const token = ref('')
 const conversationId = ref('')
 
 // localStorage 存储 key
 const STORAGE_KEY = 'dify-chat-history'
 const CONVERSATION_KEY = 'dify-conversation-id'
+const USER_ID_KEY = 'dify-user-id'
+
+// 获取或生成用户ID
+const getUserId = () => {
+  if (typeof window === 'undefined') return 'anonymous'
+  
+  let userId = localStorage.getItem(USER_ID_KEY)
+  if (!userId) {
+    // 生成唯一用户ID
+    userId = 'user-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9)
+    localStorage.setItem(USER_ID_KEY, userId)
+  }
+  return userId
+}
 
 // 保存会话到 localStorage
 const saveConversation = () => {
@@ -282,11 +296,11 @@ onMounted(() => {
     
     isEnabled.value = envEnabled !== 'false' && configEnabled !== false
     
-    // 获取API密钥
-    apiKey.value = import.meta.env.VITE_DIFY_API_KEY || config.value.apiKey || ''
+    // 获取 App Token（优先级：环境变量 > 配置文件）
+    token.value = import.meta.env.VITE_DIFY_TOKEN || config.value.token || ''
     
-    if (isEnabled.value && !apiKey.value) {
-      console.warn('[Dify] API密钥未配置，AI助手功能已禁用')
+    if (isEnabled.value && !token.value) {
+      console.warn('[Dify] App Token未配置，AI助手功能已禁用')
       isEnabled.value = false
     }
     
@@ -337,7 +351,7 @@ const sendMessage = async (message) => {
     const response = await fetch(`${config.value.baseUrl || 'https://api.dify.ai/v1'}/chat-messages`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey.value}`,
+        'Authorization': `Bearer ${token.value}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -345,7 +359,7 @@ const sendMessage = async (message) => {
         query: message,
         response_mode: 'streaming',
         conversation_id: conversationId.value || undefined,
-        user: 'vitepress-user'
+        user: getUserId()
       })
     })
     
