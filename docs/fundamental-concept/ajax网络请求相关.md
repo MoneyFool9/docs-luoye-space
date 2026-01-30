@@ -1,181 +1,227 @@
-# 对于网络请求ajax的思考
+# AJAX 网络请求相关
 
--> 编写ajax程序，发送带有参数的http请求
+## 关联阅读
+- [网络请求学习路径](./网络请求学习路径)
+- [fetch / axios 配置与常用写法](./fetch%20axios配置)
 
--> 解析返回的json数据，处理DOM CSS渲染页面
+## 1. 基本概念
+AJAX（Asynchronous JavaScript And XML）指在**不刷新页面**的情况下，通过 JavaScript 与服务器进行数据交换并更新页面内容。
 
-一个异步请求request
+常见术语：
+- **request / response**：请求与响应
+- **接口 / API / endpoint**：后端提供的可访问地址
+- **header / body**：请求头与请求体
+- **query / params**：URL 查询参数
 
-首先通过js获取用户输入信息，创建ajax对象，让他去请求服务器，服务器接受请求，服务器处理请求，服务器响应数据返回给客户端ajax对象回调函数，客户端利用js去渲染响应的数据
-
-原生ajax的请求步骤
-
-1. 创建XMLHttpRequest对象
-2. 准备发送 open()
-
-open(‘请求方式get/post’, ’url地址’, boolean-true异步)
-
-3. 发送请求 send()
-4. 监听函数 —监听ajax各个状态，回调函数—返回数据
-
-状态码：readyState  — 判断状态改变 0 1 2 3 4 
-
-new-0  open- 1  send -1  fun-  接受 2 处理 3  响应 4
-
-发送服务器请求  request  response
-
-xhr.status  http协议知否请求成功
-
-2xx   表示成功   200
-
-3xx   重定向    304 页面存在  307  jd.com —>www.jd.com
-
-4xx   资源不存在  404
-
-5xx   服务器错误  500  505 
-
-ajax报错  排错步骤
-
-1. console  控制台
-2. network  网络请求  all  xhr —ajax请求内容  online —网络模式
-3. 打开xhr文件目录
-4. 点开请求文件
-5. 查看请求头Request Headers  响应头Response Headerss  响应体 Response 
-
-ajax请求传递参数
-
-xhr.open(‘get’, url, ture);
-
-var url = ’06ajax_get.php?username =’ +uname+ ‘&password’ +mima
-
-var data = ‘username = ${uname} & password = ${mima}’
-
-xhr.setRequestHeader (“Content-type”, “application/x-www-form-urlencoded; charset = utf-8”)
-
-xhr.send(data);
-
-如何解析json数据？
-
-字符串 -> 对象
-
-JSON.parse ();  循环拼接字符串
-
-使用ajax请求数据时，被请求的url地址就叫做接口
-
-接口测试步骤
-
-1. 选择请求的方式
-2. 填写请求的URL地址
-3. 填写请求的参数 / 选择body面板并勾选数据格式
-4. （选择要向服务器发送的数据）
-5. 点击Send按钮发起请求
-6. 查看服务器响应的结果
-
-接口文档：接口名称 接口URL 调用方式 参数格式  输出内容（响应格式）  返回实例
-
-POST方式请求接口
-
-form表单数据提交  一些常用的属性以及操作
-
-表单的同步提交： submit后的行为
-
-监听表单的提交事件 
-
-get列表table数据  th  tb  
-
-URL编码 encodeURL  decodeURL
-
-XHR Level2 
-
-1. timeout属性 传数值ms  ontimeout 可添加回调函数
-2. FormData 
-3. 上传文件 验证是否选择文件  向FormData中追加文件
-4. 显示进度   渲染进度条
-
-xhr.upload.onprogress 获取上传速度
-
-var xhr = new XMLHttpRequest ();
-
-xhr.open();
-
-xhr.send();
-
- 
-
-xhr.onreadystatechange = function() {
-
-   if(xhr.readyState == 4){
-
-​      if (xhr.status == 200){  //http 协议状态 200成功 404找不到资源
-
-​        console.log (xhr.responseText);
-
-​      }
-
-   }
-
-}
-
-封装ajax请求函数  
-
-1. 传data对象参数
-2. 处理data参数转化为查询字符串（封装resolveData）
-3. 判断请求的类型 
+## 2. 原生 XHR 基本流程
+步骤：
+1. 创建 `XMLHttpRequest` 对象
+2. `open()` 设置请求方法与 URL
+3. `send()` 发送请求
+4. 监听 `readystatechange` / `load` / `error`
 
 ```javascript
-function resolveData (data) {
+const xhr = new XMLHttpRequest();
 
-  var arr = []
+xhr.open('GET', '/api/user?id=1', true);
 
-  for (var k in data) {
-
-​     var str = k + ‘=’ +data[k]
-
-​     arr.push (str)
-
+xhr.onreadystatechange = function () {
+  if (xhr.readyState === 4) {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      const data = JSON.parse(xhr.responseText);
+      console.log(data);
+    } else {
+      console.error('请求失败:', xhr.status);
+    }
   }
+};
 
-}
+xhr.send();
+```
 
-return  arr.join (‘&’)
+### readyState 状态码
+- 0：未初始化
+- 1：已调用 `open()`
+- 2：已收到响应头
+- 3：正在下载响应体
+- 4：完成
 
-function ajax (options) {
+### HTTP 状态码速记
+- 2xx：成功（如 200）
+- 3xx：重定向（如 304、307）
+- 4xx：客户端错误（如 400、401、403、404）
+- 5xx：服务端错误（如 500、502、503）
 
-  var xhr = new XMLHttpRequest ();
+## 3. GET / POST 参数传递
+### GET（URL 参数）
+```javascript
+const params = new URLSearchParams({
+  username: 'tom',
+  password: '123456'
+});
 
-  var qs = resolveData (options.data)
+xhr.open('GET', `/api/login?${params.toString()}`);
+xhr.send();
+```
 
-  
+### POST（表单 / JSON）
+**x-www-form-urlencoded**：
+```javascript
+xhr.open('POST', '/api/login');
+xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 
-  if(options.method.toUpperCase() == ‘GET’){
+const body = new URLSearchParams({
+  username: 'tom',
+  password: '123456'
+});
 
-​    xhr.open(options.method, options.url + ‘?’ + qs)
+xhr.send(body.toString());
+```
 
-​    xhr.send ()
+**application/json**：
+```javascript
+xhr.open('POST', '/api/login');
+xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
 
-  }else if (options.method.toUpperCase() == ‘POST’){
+xhr.send(JSON.stringify({ username: 'tom', password: '123456' }));
+```
 
-​     xhr.open (options.method, options.url)
+## 4. JSON 解析
+- 字符串 -> 对象：`JSON.parse()`
+- 对象 -> 字符串：`JSON.stringify()`
 
-​     xhr.setRequestHeader(‘Content-type’, ‘qpplication/x-ww-form-urlencoded’)
+## 5. 错误处理与超时
+```javascript
+xhr.timeout = 8000;
 
-​     xhr.send(qs)
+xhr.ontimeout = function () {
+  console.error('请求超时');
+};
 
-   }
+xhr.onerror = function () {
+  console.error('网络错误');
+};
+```
 
-  xhr.onreadystatechange = function() {
+注意：
+- `onerror` 只代表网络层错误，**HTTP 4xx/5xx 不会触发**
+- 需要在 `readyState === 4` 时判断 `status`
 
-   if(xhr.readyState == 4 && xhr.status ==200){
+## 6. XHR Level2 常用能力
+- `timeout` + `ontimeout`：超时控制
+- `responseType`：设置响应类型（`json` / `blob` / `arraybuffer`）
+- `onprogress`：下载进度
+- `xhr.upload.onprogress`：上传进度
+- `FormData`：表单与文件上传
 
-​      var result = JSON.parse (xhr.responseText)
+```javascript
+const form = new FormData();
+form.append('avatar', fileInput.files[0]);
 
-​      options.success(result)
+xhr.open('POST', '/api/upload');
 
-   }
+xhr.upload.onprogress = function (e) {
+  if (e.lengthComputable) {
+    const percent = Math.round((e.loaded / e.total) * 100);
+    console.log('上传进度:', percent + '%');
+  }
+};
 
+xhr.send(form);
+```
+
+## 7. fetch（现代推荐）
+`fetch` 基于 Promise，配合 `async/await` 使用更直观。
+
+```javascript
+async function getUser() {
+  const res = await fetch('/api/user?id=1');
+  if (!res.ok) throw new Error(`请求失败: ${res.status}`);
+  const data = await res.json();
+  return data;
 }
 ```
 
-axios  一个库  专注于网络数据请求
+POST 示例：
+```javascript
+await fetch('/api/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ username: 'tom', password: '123456' })
+});
+```
 
-Async await  (promise封装)
+## 8. axios（工程常用）
+axios 基于 Promise，语法简洁，支持拦截器、默认配置等。
+
+```javascript
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: '/api',
+  timeout: 8000
+});
+
+api.interceptors.response.use(
+  res => res.data,
+  err => Promise.reject(err)
+);
+
+const user = await api.get('/user', { params: { id: 1 } });
+```
+
+## 9. 调试与排错（DevTools）
+1. 打开浏览器开发者工具（F12）
+2. Network 面板 -> 选择 XHR / Fetch
+3. 查看 Request Headers / Response Headers / Response
+4. 确认：URL、方法、参数、状态码、返回数据
+
+常见问题：
+- 404：接口地址不对
+- 401/403：鉴权失败（token / cookie）
+- 500：服务端异常
+- CORS：跨域限制（需后端允许或使用代理）
+
+## 10. 简单封装（Promise 版 XHR）
+```javascript
+function ajax({ method = 'GET', url, data = {}, headers = {} }) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const upper = method.toUpperCase();
+
+    let finalURL = url;
+    if (upper === 'GET') {
+      const qs = new URLSearchParams(data).toString();
+      if (qs) finalURL += (finalURL.includes('?') ? '&' : '?') + qs;
+    }
+
+    xhr.open(upper, finalURL, true);
+
+    Object.keys(headers).forEach((k) => {
+      xhr.setRequestHeader(k, headers[k]);
+    });
+
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState !== 4) return;
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(xhr.responseText);
+      } else {
+        reject(new Error(`HTTP ${xhr.status}`));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('网络错误'));
+
+    if (upper === 'GET') {
+      xhr.send();
+    } else {
+      xhr.send(JSON.stringify(data));
+    }
+  });
+}
+```
+
+---
+
+**建议**：新项目优先使用 `fetch` 或 `axios`；需要兼容低版本浏览器时才使用 XHR。
+[[fetch axios配置]]
