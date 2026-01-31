@@ -106,8 +106,9 @@ async function syncToDify() {
   // 遍历并上传文件
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
-    // 使用完整的相对路径作为文件名，以便前端能准确跳转
-    const fileName = file  // 例如: "docs/front-end/小程序/微信小程序基础.md"
+    // 使用文件名（不含路径），避免 Dify API 的特殊字符限制
+    // 前端通过映射表来查找完整路径
+    const fileName = file.split('/').pop()  // 只取文件名
 
     console.log(`[${i + 1}/${files.length}] 处理: ${file}`)
 

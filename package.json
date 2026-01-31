@@ -7,9 +7,10 @@
     "vitepress": "^1.3.4"
   },
   "scripts": {
-    "docs:dev": "vitepress dev",
-    "docs:build": "vitepress build",
+    "docs:dev": "npm run gen:map && vitepress dev",
+    "docs:build": "npm run gen:map && vitepress build",
     "docs:preview": "vitepress preview",
-    "sync:dify": "node scripts/sync-to-dify.mjs"
+    "sync:dify": "node scripts/sync-to-dify.mjs",
+    "gen:map": "node scripts/generate-doc-map.mjs"
   }
 }

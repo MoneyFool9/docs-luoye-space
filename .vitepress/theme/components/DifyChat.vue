@@ -597,10 +597,13 @@ const toggleReferences = (index) => {
   }
 }
 
-// 从 config.js 导入并生成反向映射（中文名 -> 英文路径）
+// 导入文档路径映射表
+import docPathMap from '../../doc-path-map.json'
+
+// 从 config.js 导入中文名到英文路径的映射
 import { textAndIndexMap } from '../../../utils/config.js'
 
-// 生成反向映射表：name -> key
+// 生成反向映射表：name -> key（用于目录名映射）
 const pathMap = Object.fromEntries(
   Object.entries(textAndIndexMap).map(([key, value]) => [value.name, key])
 )
@@ -609,36 +612,50 @@ const pathMap = Object.fromEntries(
 const navigateToReference = (ref) => {
   if (!ref.document_name) return
 
-  // 处理文档名称，生成路径
-  let docPath = ref.document_name
-
-  // 移除.md后缀（如果有）
-  docPath = docPath.replace(/\.md$/i, '')
-
-  // 标准化路径分隔符为 /
-  docPath = docPath.replace(/\\/g, '/')
-
-  // 提取 docs 之后的部分
-  const docsMatch = docPath.match(/docs\/(.+)/i)
-  if (docsMatch) {
-    // 已经包含 docs/ 前缀，提取后面的部分
-    docPath = docsMatch[1]
+  // 提取文件名（移除可能的路径前缀）
+  let fileName = ref.document_name
+  if (fileName.includes('/') || fileName.includes('\\')) {
+    fileName = fileName.split(/[/\\]/).pop()
   }
 
-  // 对路径中的每个部分尝试进行映射转换（中文名 -> 英文路径）
+  // 确保有 .md 后缀
+  if (!fileName.endsWith('.md')) {
+    fileName += '.md'
+  }
+
+  // 从映射表查找完整路径
+  let fullPath = docPathMap[fileName]
+
+  if (!fullPath) {
+    console.warn('[DifyChat] 未找到文档映射:', fileName)
+    return
+  }
+
+  // 如果是数组（同名文件），取第一个
+  if (Array.isArray(fullPath)) {
+    console.warn('[DifyChat] 发现同名文件，使用第一个:', fullPath)
+    fullPath = fullPath[0]
+  }
+
+  // 移除 docs/ 前缀
+  let docPath = fullPath.replace(/^docs\//, '')
+
+  // 移除 .md 后缀
+  docPath = docPath.replace(/\.md$/, '')
+
+  // 对路径中的每个部分进行目录名映射（中文名 -> 英文路径）
   const parts = docPath.split('/')
   const mappedParts = parts.map(part => {
-    // 如果是中文名称，尝试映射为英文路径
     return pathMap[part] || part
   })
 
-  // 构建最终路径
+  // 构建最终 URL
   const finalPath = '/docs/' + mappedParts.join('/') + '.html'
 
   console.log('[DifyChat] 引用跳转:', {
     原始名称: ref.document_name,
-    处理后路径: docPath,
-    映射后路径: mappedParts.join('/'),
+    文件名: fileName,
+    映射路径: fullPath,
     最终URL: finalPath
   })
 
