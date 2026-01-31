@@ -608,44 +608,42 @@ const pathMap = Object.fromEntries(
 // 跳转到引用文档
 const navigateToReference = (ref) => {
   if (!ref.document_name) return
-  
+
   // 处理文档名称，生成路径
   let docPath = ref.document_name
-  
+
   // 移除.md后缀（如果有）
   docPath = docPath.replace(/\.md$/i, '')
-  
-  // 如果是绝对路径或包含目录分隔符
-  if (docPath.includes('/') || docPath.includes('\\')) {
-    // 已经是路径格式，尝试提取 docs 之后的部分
-    const docsMatch = docPath.match(/docs[\\/](.+)/i)
-    if (docsMatch) {
-      docPath = docsMatch[1].replace(/\\/g, '/')
-    } else {
-      // 直接使用
-      docPath = docPath.replace(/\\/g, '/')
-    }
-    
-    // 对路径中的每个部分尝试进行映射转换
-    const parts = docPath.split('/')
-    const mappedParts = parts.map(part => {
-      // 如果是中文名称，尝试映射为英文路径
-      return pathMap[part] || part
-    })
-    docPath = '/docs/' + mappedParts.join('/')
-  } else {
-    // 只有文件名，直接拼接
-    docPath = '/docs/' + docPath
+
+  // 标准化路径分隔符为 /
+  docPath = docPath.replace(/\\/g, '/')
+
+  // 提取 docs 之后的部分
+  const docsMatch = docPath.match(/docs\/(.+)/i)
+  if (docsMatch) {
+    // 已经包含 docs/ 前缀，提取后面的部分
+    docPath = docsMatch[1]
   }
-  
-  // 移除可能的.md后缀
-  docPath = docPath.replace(/\.md$/i, '')
-  
-  // 添加.html后缀
-  docPath = docPath + '.html'
-  
+
+  // 对路径中的每个部分尝试进行映射转换（中文名 -> 英文路径）
+  const parts = docPath.split('/')
+  const mappedParts = parts.map(part => {
+    // 如果是中文名称，尝试映射为英文路径
+    return pathMap[part] || part
+  })
+
+  // 构建最终路径
+  const finalPath = '/docs/' + mappedParts.join('/') + '.html'
+
+  console.log('[DifyChat] 引用跳转:', {
+    原始名称: ref.document_name,
+    处理后路径: docPath,
+    映射后路径: mappedParts.join('/'),
+    最终URL: finalPath
+  })
+
   // 在新窗口打开文档
-  window.open(docPath, '_blank')
+  window.open(finalPath, '_blank')
 }
 </script>
 
