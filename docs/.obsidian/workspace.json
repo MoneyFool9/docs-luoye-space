@@ -6,7 +6,7 @@
       {
         "id": "60b26c50d47cd471",
         "type": "tabs",
-        "dimension": 54.380341880341874,
+        "dimension": 62.5,
         "children": [
           {
             "id": "d027867b0ab4680d",
@@ -14,23 +14,23 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "fundamental-concept/网络请求学习路径.md",
+                "file": "temp/threejs-architecture.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "网络请求学习路径"
+              "title": "threejs-architecture"
             }
           }
         ]
       },
       {
-        "id": "ef580fca54931c34",
+        "id": "e06b710fd1d3b807",
         "type": "tabs",
-        "dimension": 45.61965811965812,
+        "dimension": 37.5,
         "children": [
           {
-            "id": "ffd48c1f394f4b9b",
+            "id": "f1796bf7308284e9",
             "type": "leaf",
             "pinned": true,
             "state": {
@@ -40,10 +40,12 @@
                   "cwd": "C:\\Users\\PC\\Desktop\\space\\space-vitepress\\docs-luoye-space\\docs",
                   "focus": false,
                   "profile": {
-                    "args": [],
-                    "executable": "C:\\Windows\\System32\\cmd.exe",
+                    "args": [
+                      "--login"
+                    ],
+                    "executable": "C:\\Program Files\\Git\\bin\\bash.exe",
                     "followTheme": true,
-                    "name": "",
+                    "name": "gg",
                     "platforms": {
                       "win32": true
                     },
@@ -66,7 +68,7 @@
               },
               "pinned": true,
               "icon": "terminal",
-              "title": "终端：C:\\Windows\\System32\\conhost.exe"
+              "title": "终端：MINGW64:/c/Users/PC/Desktop/space/space-vitepress/docs-luoye-space/docs"
             }
           }
         ]
@@ -230,8 +232,10 @@
       "terminal:Open terminal": false
     }
   },
-  "active": "ffd48c1f394f4b9b",
+  "active": "f1796bf7308284e9",
   "lastOpenFiles": [
+    "temp/threejs-architecture.md",
+    "fundamental-concept/网络请求学习路径.md",
     "system_develop/best_practices/git相关.md",
     "system_develop/best_practices",
     "system_develop",
@@ -246,7 +250,6 @@
     "external_ability",
     "dataStruct_algo/problems.md",
     "dataStruct_algo",
-    "fundamental-concept/网络请求学习路径.md",
     "fundamental-concept/ajax网络请求相关.md",
     "fundamental-concept/fetch axios配置.md",
     "未命名.md",
