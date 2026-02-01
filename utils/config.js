@@ -46,7 +46,7 @@ export const textAndIndexMap = {
   export const ENTRY = 'docs'
   
   // 屏蔽的文件夹名称
-  export const NOT_READ = ['public', 'utils']
+  export const NOT_READ = ['public', 'utils', '.obsidian']
   
   // 替换名字的方法
   export const textMapFn = (textMap, text) => {

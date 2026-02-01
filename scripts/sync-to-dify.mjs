@@ -1,5 +1,4 @@
 import fs from 'fs'
-import path from 'path'
 import { glob } from 'glob'
 import dotenv from 'dotenv'
 
@@ -107,8 +106,10 @@ async function syncToDify() {
   // 遍历并上传文件
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
-    const fileName = path.basename(file)
-    
+    // 使用文件名（不含路径），避免 Dify API 的特殊字符限制
+    // 前端通过映射表来查找完整路径
+    const fileName = file.split('/').pop()  // 只取文件名
+
     console.log(`[${i + 1}/${files.length}] 处理: ${file}`)
 
     try {

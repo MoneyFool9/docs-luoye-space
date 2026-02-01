@@ -18,7 +18,7 @@
 1. 访问 [Dify官网](https://dify.ai) 并注册/登录账号
 2. 进入控制台，创建新的知识库（Dataset）
 3. 记录以下信息：
-   - **API Key**：在设置中生成API密钥
+   - **Dataset API Key**：在设置中生成API密钥（用于上传文档）
    - **Dataset ID**：知识库的唯一标识符
 
 ### 2. 创建Dify应用
@@ -29,9 +29,15 @@
    - 设置欢迎语
    - 配置提示词（可选）
    - 调整AI参数（温度、top-p等）
-4. 发布应用并获取Web API密钥
+4. 发布应用并获取 **App Token**（以 `app-` 开头）
 
-### 3. 本地开发配置
+### 3. 配置域名白名单（推荐）
+
+在 Dify 应用设置中配置允许访问的域名白名单，这样可以安全地在前端使用 Token：
+- 添加你的网站域名（如 `https://your-domain.github.io`）
+- 本地开发时添加 `http://localhost:5173`
+
+### 4. 本地开发配置
 
 复制`.env.example`为`.env`：
 
@@ -42,30 +48,33 @@ cp .env.example .env
 编辑`.env`文件，填入实际的配置信息：
 
 ```env
-# 前端配置
-VITE_DIFY_API_KEY=app-xxxxxxxxxxxxxx
-VITE_DIFY_BASE_URL=https://api.dify.ai/v1
+# 前端配置（使用 App Token）
+VITE_DIFY_TOKEN=app-xxxxxxxxxxxxxx
 VITE_DIFY_ENABLED=true
 
-# 后端配置（用于同步脚本）
+# 后端配置（用于同步脚本，使用 Dataset API Key）
 DIFY_API_KEY=dataset-xxxxxxxxxxxxxx
 DIFY_DATASET_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
 **注意：**
-- `VITE_DIFY_API_KEY`：使用应用的API密钥（用于前端对话）
-- `DIFY_API_KEY`：使用知识库的API密钥（用于上传文档）
-- 两者可能不同，请在Dify控制台分别获取
+- `VITE_DIFY_TOKEN`：使用应用的 App Token（以 `app-` 开头，用于前端对话）
+- `DIFY_API_KEY`：使用知识库的 API 密钥（用于上传文档到知识库）
+- 两者用途不同，请在 Dify 控制台分别获取
 
-### 4. 配置GitHub Secrets
+### 5. 配置GitHub Secrets
 
 在GitHub仓库设置中添加以下Secrets（Settings → Secrets and variables → Actions）：
 
-- `DIFY_API_KEY`：知识库API密钥
-- `DIFY_DATASET_ID`：知识库ID
+**部署相关：**
+- `VITE_DIFY_TOKEN`：应用的 App Token（用于前端对话）
+
+**文档同步相关：**
+- `DIFY_API_KEY`：知识库 API 密钥
+- `DIFY_DATASET_ID`：知识库 ID
 - `DIFY_BASE_URL`（可选）：默认为 `https://api.dify.ai/v1`
 
-### 5. 首次同步文档
+### 6. 首次同步文档
 
 **本地测试同步：**
 
