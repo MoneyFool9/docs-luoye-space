@@ -1,14 +1,14 @@
 {
+  "threejs-architecture.md": "docs/temp/threejs-architecture.md",
   "The journal of c and c++.md": "docs/temp/The journal of c and c++.md",
   "网络请求学习路径.md": "docs/fundamental-concept/网络请求学习路径.md",
   "fetch axios配置.md": "docs/fundamental-concept/fetch axios配置.md",
   "problems.md": "docs/dataStruct_algo/problems.md",
-  "git相关.md": "docs/system_develop/best_practices/git相关.md",
   "Vue源码笔记.md": "docs/front-end/Vue/Vue源码笔记.md",
   "Vue3快速上手.md": "docs/front-end/Vue/Vue3快速上手.md",
   "readme.md": [
-    "docs/front-end/React/readme.md",
-    "docs/front-end/Typescript/readme.md"
+    "docs/front-end/Typescript/readme.md",
+    "docs/front-end/React/readme.md"
   ],
   "数组循环遍历方法.md": "docs/front-end/JavaScript/数组循环遍历方法.md",
   "原生js进阶.md": "docs/front-end/JavaScript/原生js进阶.md",
@@ -16,7 +16,8 @@
   "HTML_CSS笔记.md": "docs/front-end/HTML_CSS/HTML_CSS笔记.md",
   "es6相关.md": "docs/front-end/ES6/es6相关.md",
   "Vue遇到的问题.md": "docs/front-end/bugfix/Vue遇到的问题.md",
-  "uniapp入门.md": "docs/external_ability/uniapp/uniapp入门.md",
+  "git相关.md": "docs/system_develop/best_practices/git相关.md",
   "微信小程序基础.md": "docs/external_ability/wx-miniprogram/微信小程序基础.md",
+  "uniapp入门.md": "docs/external_ability/uniapp/uniapp入门.md",
   "nodejs笔记.md": "docs/external_ability/nodejs/nodejs笔记.md"
 }

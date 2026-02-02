@@ -213,3 +213,64 @@
  * Dify AI助手相关样式已在DifyChat.vue组件中通过scoped样式定义
  * 这里可以添加全局样式调整（如需要）
  */
+
+/**
+ * Component: ViewerJS - 图片查看器
+ * -------------------------------------------------------------------------- */
+
+/* 自定义viewer背景和工具栏样式 */
+.viewer-backdrop {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+.viewer-toolbar {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 暗色模式下的样式调整 */
+.dark .viewer-backdrop {
+  background-color: rgba(0, 0, 0, 0.95) !important;
+}
+
+.dark .viewer-toolbar {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+/* 图片鼠标样式提示 */
+.vp-doc img {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.vp-doc img:hover {
+  opacity: 0.9;
+}
+
+/* 排除不需要预览的图片 */
+img.no-preview {
+  cursor: default;
+}
+
+img.no-preview:hover {
+  opacity: 1;
+}
+
+/* Mermaid SVG 鼠标样式和交互提示 */
+.vp-doc .mermaid svg {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.vp-doc .mermaid svg:hover {
+  opacity: 0.9;
+}
+
+/* Viewer工具栏按钮样式优化 */
+.viewer-button {
+  color: #fff !important;
+  opacity: 0.9;
+}
+
+.viewer-button:hover {
+  opacity: 1;
+}

@@ -1,9 +1,11 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 import { set_nav_and_sidebar } from "../utils/auto_siderbar_nav.mjs";
 import { saveDocStats } from "../utils/doc_stats.mjs";
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withMermaid(
+  defineConfig({
   // 环境变量定义，用于Dify配置
   define: {
     'import.meta.env.VITE_DIFY_ENABLED': JSON.stringify(process.env.VITE_DIFY_ENABLED ?? 'true'),
@@ -23,6 +25,12 @@ export default defineConfig({
   
   // 忽略死链接检查
   ignoreDeadLinks: true,
+  
+  // Mermaid 图表配置
+  mermaid: {
+    // 可选：配置 Mermaid 主题
+    // theme: 'default'
+  },
   
   themeConfig: {
     // 最后更新时间配置
@@ -102,3 +110,4 @@ export default defineConfig({
     },
   },
 })
+)
