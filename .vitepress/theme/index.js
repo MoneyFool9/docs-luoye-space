@@ -7,6 +7,7 @@ import ReadingTime from './components/ReadingTime.vue'
 import DocStats from './components/DocStats.vue'
 import DifyChat from './components/DifyChat.vue'
 import ImageViewer from './components/ImageViewer.vue'
+import NavigationButtons from './components/NavigationButtons.vue'
 
 /** @type {import('vitepress').Theme} */
 export default {
@@ -17,8 +18,8 @@ export default {
       'doc-before': () => h(ReadingTime),
       // 在导航栏添加AI助手按钮
       'nav-bar-content-after': () => h(DifyChat),
-      // 添加图片查看器（包含Mermaid支持）
-      'layout-bottom': () => h(ImageViewer)
+      // 添加图片查看器（包含Mermaid支持）和导航按钮
+      'layout-bottom': () => [h(ImageViewer), h(NavigationButtons)]
     })
   },
   enhanceApp({ app, router, siteData }) {
@@ -27,5 +28,6 @@ export default {
     app.component('DocStats', DocStats)
     app.component('DifyChat', DifyChat)
     app.component('ImageViewer', ImageViewer)
+    app.component('NavigationButtons', NavigationButtons)
   }
 }

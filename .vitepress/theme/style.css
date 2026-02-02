@@ -274,3 +274,42 @@ img.no-preview:hover {
 .viewer-button:hover {
   opacity: 1;
 }
+
+/**
+ * Component: Wikilinks (Obsidian 双链)
+ * -------------------------------------------------------------------------- */
+
+/* 正常的双链样式 */
+.vp-doc a.wikilink {
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--vp-c-brand-2);
+  transition: all 0.2s;
+}
+
+.vp-doc a.wikilink:hover {
+  color: var(--vp-c-brand-2);
+  border-bottom-style: solid;
+}
+
+/* 断链样式（文件不存在） */
+.vp-doc .wikilink-broken {
+  color: var(--vp-c-danger-1);
+  text-decoration: line-through;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* 暗色模式下的双链样式 */
+.dark .vp-doc a.wikilink {
+  color: var(--vp-c-brand-2);
+  border-bottom-color: var(--vp-c-brand-3);
+}
+
+.dark .vp-doc a.wikilink:hover {
+  color: var(--vp-c-brand-1);
+}
+
+.dark .vp-doc .wikilink-broken {
+  color: var(--vp-c-danger-2);
+}

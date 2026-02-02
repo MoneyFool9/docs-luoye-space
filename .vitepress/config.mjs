@@ -2,6 +2,8 @@ import { defineConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 import { set_nav_and_sidebar } from "../utils/auto_siderbar_nav.mjs";
 import { saveDocStats } from "../utils/doc_stats.mjs";
+import markdownItWikilinks from './plugins/markdown-it-wikilinks.mjs';
+import docPathMap from './doc-path-map.json' with { type: 'json' };
 
 // https://vitepress.dev/reference/site-config
 export default withMermaid(
@@ -28,8 +30,18 @@ export default withMermaid(
   
   // Mermaid 图表配置
   mermaid: {
-    // 可选：配置 Mermaid 主题
+    // 可选:配置 Mermaid 主题
     // theme: 'default'
+  },
+  
+  // Markdown 配置
+  markdown: {
+    config: (md) => {
+      // 注册 Obsidian 风格双链插件
+      md.use(markdownItWikilinks, {
+        docPathMap: docPathMap
+      });
+    }
   },
   
   themeConfig: {

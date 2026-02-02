@@ -13,12 +13,22 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "system_develop/best_practices/设计系统实践指南.md",
+                "file": "fundamental-concept/fetch axios配置.md",
                 "mode": "source",
-                "source": false
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
               },
               "icon": "lucide-file",
-              "title": "设计系统实践指南"
+              "title": "fetch axios配置"
             }
           },
           {
@@ -118,6 +128,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "fundamental-concept/fetch axios配置.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -127,7 +138,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "反向链接"
+              "title": "fetch axios配置 的反向链接列表"
             }
           },
           {
@@ -136,11 +147,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "fundamental-concept/fetch axios配置.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "出链"
+              "title": "fetch axios配置 的出链列表"
             }
           },
           {
@@ -178,17 +190,17 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "system_develop/best_practices/设计系统实践指南.md",
+                "file": "fundamental-concept/fetch axios配置.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "设计系统实践指南 的大纲"
+              "title": "fetch axios配置 的大纲"
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -208,22 +220,23 @@
   },
   "active": "d027867b0ab4680d",
   "lastOpenFiles": [
-    "system_develop/best_practices/设计系统-05-工程化落地方案.md",
+    "system_develop/best_practices/git相关.md",
     "system_develop/best_practices/设计系统实践指南.md",
     "system_develop/best_practices/设计系统-01-Design-Token核心概念与分层哲学.md",
-    "system_develop/best_practices/设计系统-06-命名规范深度探讨.md",
+    "fundamental-concept/网络请求学习路径.md",
+    "front-end/JavaScript/ajax网络请求相关.md",
     "system_develop/best_practices/设计系统-04-多主题与暗黑模式最佳实践.md",
-    "external_ability/nodejs/nodejs笔记.md",
-    "system_develop/best_practices/设计系统-02-Tailwind-CSS设计哲学与深度定制.md",
     "system_develop/best_practices/设计系统-03-技术选型对比与取舍.md",
-    "system_develop/best_practices/git相关.md",
+    "fundamental-concept/fetch axios配置.md",
+    "system_develop/best_practices/设计系统-02-Tailwind-CSS设计哲学与深度定制.md",
+    "system_develop/best_practices/设计系统-05-工程化落地方案.md",
+    "system_develop/best_practices/设计系统-06-命名规范深度探讨.md",
+    "external_ability/nodejs/nodejs笔记.md",
     "system_develop/best_practices/design-token-01-核心概念与分层哲学.md",
     "temp/threejs-architecture.md",
-    "fundamental-concept/网络请求学习路径.md",
     "system_develop/best_practices",
     "system_develop",
     "front-end/Vue/Vue源码笔记.md",
-    "front-end/JavaScript/ajax网络请求相关.md",
     "external_ability/wx-miniprogram/微信小程序基础.md",
     "external_ability/uniapp/uniapp入门.md",
     "external_ability/wx-miniprogram",
@@ -233,7 +246,6 @@
     "dataStruct_algo/problems.md",
     "dataStruct_algo",
     "fundamental-concept/ajax网络请求相关.md",
-    "fundamental-concept/fetch axios配置.md",
     "未命名.md",
     "problems/problems.md",
     "temp/The journal of c and c++.md",
