@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "system_develop/best_practices/设计系统-06-命名规范深度探讨.md",
+                "file": "system_develop/best_practices/设计系统实践指南.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "设计系统-06-命名规范深度探讨"
+              "title": "设计系统实践指南"
             }
           },
           {
@@ -178,13 +178,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "system_develop/best_practices/设计系统-06-命名规范深度探讨.md",
+                "file": "system_develop/best_practices/设计系统实践指南.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "设计系统-06-命名规范深度探讨 的大纲"
+              "title": "设计系统实践指南 的大纲"
             }
           }
         ],
@@ -209,9 +209,10 @@
   "active": "d027867b0ab4680d",
   "lastOpenFiles": [
     "system_develop/best_practices/设计系统-05-工程化落地方案.md",
+    "system_develop/best_practices/设计系统实践指南.md",
+    "system_develop/best_practices/设计系统-01-Design-Token核心概念与分层哲学.md",
     "system_develop/best_practices/设计系统-06-命名规范深度探讨.md",
     "system_develop/best_practices/设计系统-04-多主题与暗黑模式最佳实践.md",
-    "system_develop/best_practices/设计系统-01-Design-Token核心概念与分层哲学.md",
     "external_ability/nodejs/nodejs笔记.md",
     "system_develop/best_practices/设计系统-02-Tailwind-CSS设计哲学与深度定制.md",
     "system_develop/best_practices/设计系统-03-技术选型对比与取舍.md",
