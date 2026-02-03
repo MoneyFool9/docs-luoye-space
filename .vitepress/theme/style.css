@@ -4,6 +4,12 @@
  */
 
 /**
+ * Import monospace fonts for terminal/code style
+ * -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+/**
  * Colors
  *
  * Each colors have exact same color scale system with 3 levels of solid
@@ -118,6 +124,21 @@
   :root {
     --vp-home-hero-image-filter: blur(135px);
   }
+}
+
+/* Hide default VitePress home hero section */
+.VPHome .VPHero {
+  display: none !important;
+}
+
+/* Hide default VitePress home features section */
+.VPHome .VPFeatures {
+  display: none !important;
+}
+
+/* Adjust home content container padding */
+.VPHome .VPHomeContent {
+  padding-top: calc(var(--vp-nav-height) + 48px) !important;
 }
 
 /**

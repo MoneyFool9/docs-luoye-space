@@ -8,6 +8,7 @@ import DocStats from './components/DocStats.vue'
 import DifyChat from './components/DifyChat.vue'
 import ImageViewer from './components/ImageViewer.vue'
 import NavigationButtons from './components/NavigationButtons.vue'
+import HeroProfile from './components/HeroProfile.vue'
 
 /** @type {import('vitepress').Theme} */
 export default {
@@ -29,5 +30,6 @@ export default {
     app.component('DifyChat', DifyChat)
     app.component('ImageViewer', ImageViewer)
     app.component('NavigationButtons', NavigationButtons)
+    app.component('HeroProfile', HeroProfile)
   }
 }
