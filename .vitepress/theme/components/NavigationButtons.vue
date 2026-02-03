@@ -57,6 +57,8 @@ const SHOW_PROGRESS = true // 是否显示滚动进度环
 
 // 计算是否有历史记录（返回按钮始终显示）
 const hasHistory = computed(() => {
+  // SSR 安全检查
+  if (typeof window === 'undefined') return false
   return window.history.length > 1
 })
 
@@ -70,6 +72,9 @@ const showProgress = computed(() => SHOW_PROGRESS)
 
 // 计算滚动进度（用于进度环）
 const scrollProgress = computed(() => {
+  // SSR 安全检查
+  if (typeof window === 'undefined') return 0
+  
   const windowHeight = window.innerHeight
   const documentHeight = document.documentElement.scrollHeight
   const scrollableHeight = documentHeight - windowHeight
@@ -89,6 +94,9 @@ const progressOffset = computed(() => {
 // 防抖处理滚动事件
 let scrollTimeout = null
 function handleScroll() {
+  // SSR 安全检查
+  if (typeof window === 'undefined') return
+  
   if (scrollTimeout) {
     clearTimeout(scrollTimeout)
   }
@@ -100,12 +108,16 @@ function handleScroll() {
 
 // 返回上一页
 function goBack() {
+  // SSR 安全检查
+  if (typeof window === 'undefined') return
   // 直接使用浏览器 History API
   window.history.back()
 }
 
 // 回到顶部
 function scrollToTop() {
+  // SSR 安全检查
+  if (typeof window === 'undefined') return
   window.scrollTo({
     top: 0,
     behavior: 'smooth'
@@ -114,6 +126,9 @@ function scrollToTop() {
 
 // 生命周期
 onMounted(() => {
+  // SSR 安全检查
+  if (typeof window === 'undefined') return
+  
   // 初始化滚动位置
   scrollY.value = window.scrollY
   
@@ -122,6 +137,9 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  // SSR 安全检查
+  if (typeof window === 'undefined') return
+  
   // 移除滚动监听
   window.removeEventListener('scroll', handleScroll)
   if (scrollTimeout) {
