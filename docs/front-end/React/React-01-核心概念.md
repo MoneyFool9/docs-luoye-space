@@ -90,7 +90,7 @@ function App() {
 |------|----------|----------|
 | CSS 类名 | `className` | `class` |
 | 标签属性 | `htmlFor` | `for` |
-| 内联样式 | `style={{ color: 'red' }}` | `style="color: red"` |
+| 内联样式 | `style=\{\{ color: 'red' \}\}` | `style="color: red"` |
 | 事件名 | `onClick` | `onclick` |
 | 自闭合标签 | `<img />` | `<img>` |
 
