@@ -6,7 +6,6 @@
       {
         "id": "60b26c50d47cd471",
         "type": "tabs",
-        "dimension": 62.5,
         "children": [
           {
             "id": "d027867b0ab4680d",
@@ -20,55 +19,6 @@
               },
               "icon": "lucide-file",
               "title": "threejs-architecture"
-            }
-          }
-        ]
-      },
-      {
-        "id": "e06b710fd1d3b807",
-        "type": "tabs",
-        "dimension": 37.5,
-        "children": [
-          {
-            "id": "f1796bf7308284e9",
-            "type": "leaf",
-            "pinned": true,
-            "state": {
-              "type": "terminal:terminal",
-              "state": {
-                "terminal:terminal": {
-                  "cwd": "C:\\Users\\PC\\Desktop\\space\\space-vitepress\\docs-luoye-space\\docs",
-                  "focus": false,
-                  "profile": {
-                    "args": [
-                      "--login"
-                    ],
-                    "executable": "C:\\Program Files\\Git\\bin\\bash.exe",
-                    "followTheme": true,
-                    "name": "gg",
-                    "platforms": {
-                      "win32": true
-                    },
-                    "pythonExecutable": "python3",
-                    "restoreHistory": false,
-                    "rightClickAction": "copyPaste",
-                    "successExitCodes": [
-                      "0",
-                      "SIGINT",
-                      "SIGTERM"
-                    ],
-                    "terminalOptions": {
-                      "documentOverride": null
-                    },
-                    "type": "integrated",
-                    "useWin32Conhost": true
-                  },
-                  "serial": null
-                }
-              },
-              "pinned": true,
-              "icon": "terminal",
-              "title": "终端：MINGW64:/c/Users/PC/Desktop/space/space-vitepress/docs-luoye-space/docs"
             }
           }
         ]
@@ -128,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 200
   },
   "right": {
     "id": "440c325439e55124",
@@ -232,7 +182,7 @@
       "terminal:Open terminal": false
     }
   },
-  "active": "f1796bf7308284e9",
+  "active": "d027867b0ab4680d",
   "lastOpenFiles": [
     "temp/threejs-architecture.md",
     "fundamental-concept/网络请求学习路径.md",
