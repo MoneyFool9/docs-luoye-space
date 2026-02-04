@@ -1,9 +1,13 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 import { set_nav_and_sidebar } from "../utils/auto_siderbar_nav.mjs";
 import { saveDocStats } from "../utils/doc_stats.mjs";
+import markdownItWikilinks from './plugins/markdown-it-wikilinks.mjs';
+import docPathMap from './doc-path-map.json' with { type: 'json' };
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withMermaid(
+  defineConfig({
   // 环境变量定义，用于Dify配置
   define: {
     'import.meta.env.VITE_DIFY_ENABLED': JSON.stringify(process.env.VITE_DIFY_ENABLED ?? 'true'),
@@ -23,6 +27,32 @@ export default defineConfig({
   
   // 忽略死链接检查
   ignoreDeadLinks: true,
+  
+  // Mermaid 图表配置
+  mermaid: {
+    // 可选:配置 Mermaid 主题
+    // theme: 'default'
+  },
+  
+  // Markdown 配置
+  markdown: {
+    config: (md) => {
+      // 自动转义markdown中的双大括号（避免与Vue插值冲突）
+      md.core.ruler.before('normalize', 'escape-curly-braces', (state) => {
+        const content = state.src
+        // 只转义反引号内的双大括号
+        state.src = content.replace(/`([^`]*\{\{[^}]*\}\}[^`]*)`/g, (match, code) => {
+          // 将反引号内的 {{ }} 转义为 \{\{ \}\}
+          return '`' + code.replace(/\{\{/g, '\\{\\{').replace(/\}\}/g, '\\}\\}') + '`'
+        })
+      })
+      
+      // 注册 Obsidian 风格双链插件
+      md.use(markdownItWikilinks, {
+        docPathMap: docPathMap
+      });
+    }
+  },
   
   themeConfig: {
     // 最后更新时间配置
@@ -102,3 +132,4 @@ export default defineConfig({
     },
   },
 })
+)

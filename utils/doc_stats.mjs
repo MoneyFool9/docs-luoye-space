@@ -123,7 +123,7 @@ export function generateDocStats() {
     .slice(0, 10)
     .map(doc => ({
       name: doc.name,
-      path: `/${ENTRY}/${doc.path}`,
+      path: `/${ENTRY}/${doc.path.replace(/\.md$/, '.html')}`,
       lastModified: doc.lastModified.toLocaleDateString('zh-CN', {
         year: 'numeric',
         month: 'long',

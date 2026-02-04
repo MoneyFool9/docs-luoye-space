@@ -4,6 +4,12 @@
  */
 
 /**
+ * Import monospace fonts for terminal/code style
+ * -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+/**
  * Colors
  *
  * Each colors have exact same color scale system with 3 levels of solid
@@ -120,6 +126,21 @@
   }
 }
 
+/* Hide default VitePress home hero section */
+.VPHome .VPHero {
+  display: none !important;
+}
+
+/* Hide default VitePress home features section */
+.VPHome .VPFeatures {
+  display: none !important;
+}
+
+/* Adjust home content container padding */
+.VPHome .VPHomeContent {
+  padding-top: calc(var(--vp-nav-height) + 48px) !important;
+}
+
 /**
  * Component: Custom Block
  * -------------------------------------------------------------------------- */
@@ -213,3 +234,103 @@
  * Dify AI助手相关样式已在DifyChat.vue组件中通过scoped样式定义
  * 这里可以添加全局样式调整（如需要）
  */
+
+/**
+ * Component: ViewerJS - 图片查看器
+ * -------------------------------------------------------------------------- */
+
+/* 自定义viewer背景和工具栏样式 */
+.viewer-backdrop {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+.viewer-toolbar {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 暗色模式下的样式调整 */
+.dark .viewer-backdrop {
+  background-color: rgba(0, 0, 0, 0.95) !important;
+}
+
+.dark .viewer-toolbar {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+/* 图片鼠标样式提示 */
+.vp-doc img {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.vp-doc img:hover {
+  opacity: 0.9;
+}
+
+/* 排除不需要预览的图片 */
+img.no-preview {
+  cursor: default;
+}
+
+img.no-preview:hover {
+  opacity: 1;
+}
+
+/* Mermaid SVG 鼠标样式和交互提示 */
+.vp-doc .mermaid svg {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.vp-doc .mermaid svg:hover {
+  opacity: 0.9;
+}
+
+/* Viewer工具栏按钮样式优化 */
+.viewer-button {
+  color: #fff !important;
+  opacity: 0.9;
+}
+
+.viewer-button:hover {
+  opacity: 1;
+}
+
+/**
+ * Component: Wikilinks (Obsidian 双链)
+ * -------------------------------------------------------------------------- */
+
+/* 正常的双链样式 */
+.vp-doc a.wikilink {
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--vp-c-brand-2);
+  transition: all 0.2s;
+}
+
+.vp-doc a.wikilink:hover {
+  color: var(--vp-c-brand-2);
+  border-bottom-style: solid;
+}
+
+/* 断链样式（文件不存在） */
+.vp-doc .wikilink-broken {
+  color: var(--vp-c-danger-1);
+  text-decoration: line-through;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* 暗色模式下的双链样式 */
+.dark .vp-doc a.wikilink {
+  color: var(--vp-c-brand-2);
+  border-bottom-color: var(--vp-c-brand-3);
+}
+
+.dark .vp-doc a.wikilink:hover {
+  color: var(--vp-c-brand-1);
+}
+
+.dark .vp-doc .wikilink-broken {
+  color: var(--vp-c-danger-2);
+}
