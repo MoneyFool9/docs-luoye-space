@@ -36,6 +36,28 @@ function parseWikilink(content) {
 }
 
 /**
+ * 将标题转换为VitePress兼容的锚点slug
+ * 参考VitePress的slugify规则
+ * @param {string} title - 标题文本
+ * @returns {string} - slug
+ */
+function slugify(title) {
+  return title
+    .trim()
+    .toLowerCase()
+    // 移除中文标点符号
+    .replace(/[\u3000-\u303F]/g, '') // CJK符号和标点
+    .replace(/[、，。！？；：""''（）【】《》]/g, '')
+    // 空格和多余的连字符转为单个连字符
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    // 移除特殊字符，保留中文、字母、数字、连字符
+    .replace(/[^\u4e00-\u9fa5a-z0-9\-]/g, '')
+    // 移除首尾连字符
+    .replace(/^-+|-+$/g, '')
+}
+
+/**
  * 将文件路径转换为 VitePress URL
  * @param {string} filePath - 文件路径（如：docs/front-end/Vue/Vue3快速上手.md）
  * @param {string|null} anchor - 锚点
@@ -50,12 +72,7 @@ function pathToUrl(filePath, anchor = null) {
   
   // 添加锚点
   if (anchor) {
-    // 将锚点转换为 URL 友好格式（小写、替换空格为连字符）
-    const anchorSlug = anchor
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^\u4e00-\u9fa5a-z0-9\-]/g, '')
-    url += '#' + anchorSlug
+    url += '#' + slugify(anchor)
   }
   
   // 对中文等特殊字符进行 URL 编码（但保留路径分隔符和锚点）
@@ -135,6 +152,21 @@ export default function markdownItWikilinks(md, options = {}) {
       // 创建 link_open token
       const token_open = state.push('link_open', 'a', 1)
       token_open.attrSet('href', url)
+      token_open.attrSet('class', 'wikilink')
+
+      // 创建 text token
+      const token_text = state.push('text', '', 0)
+      token_text.content = displayText
+
+      // 创建 link_close token
+      state.push('link_close', 'a', -1)
+    } else if (!filename && anchor) {
+      // 页面内锚点链接：[[#标题]]
+      const displayText = alias || anchor
+      
+      // 创建 link_open token
+      const token_open = state.push('link_open', 'a', 1)
+      token_open.attrSet('href', '#' + slugify(anchor))
       token_open.attrSet('class', 'wikilink')
 
       // 创建 text token

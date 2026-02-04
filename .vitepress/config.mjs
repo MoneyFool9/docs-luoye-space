@@ -37,6 +37,16 @@ export default withMermaid(
   // Markdown 配置
   markdown: {
     config: (md) => {
+      // 自动转义markdown中的双大括号（避免与Vue插值冲突）
+      md.core.ruler.before('normalize', 'escape-curly-braces', (state) => {
+        const content = state.src
+        // 只转义反引号内的双大括号
+        state.src = content.replace(/`([^`]*\{\{[^}]*\}\}[^`]*)`/g, (match, code) => {
+          // 将反引号内的 {{ }} 转义为 \{\{ \}\}
+          return '`' + code.replace(/\{\{/g, '\\{\\{').replace(/\}\}/g, '\\}\\}') + '`'
+        })
+      })
+      
       // 注册 Obsidian 风格双链插件
       md.use(markdownItWikilinks, {
         docPathMap: docPathMap
