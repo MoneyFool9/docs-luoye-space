@@ -30,6 +30,8 @@
 
 ### 1. 两数之和 (Easy)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/two-sum/)
+
 给定一个整数数组 `nums` 和一个目标值 `target`，找出和为目标值的两个数的下标。
 
 **💡 思路**：用哈希表存储已遍历的数及其索引，对于每个数查找 `target - num` 是否存在。
@@ -54,6 +56,8 @@ function twoSum(nums, target) {
 
 ### 49. 字母异位词分组 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/group-anagrams/)
+
 给定一个字符串数组，将字母异位词组合在一起。
 
 **💡 思路**：将每个字符串排序后作为 key，相同 key 的字符串归为一组。
@@ -77,6 +81,8 @@ function groupAnagrams(strs) {
 ---
 
 ### 128. 最长连续序列 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/longest-consecutive-sequence/)
 
 给定一个未排序的整数数组，找出最长连续序列的长度。
 
@@ -114,6 +120,8 @@ function longestConsecutive(nums) {
 
 ### 283. 移动零 (Easy)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/move-zeroes/)
+
 将所有 0 移动到数组末尾，保持非零元素的相对顺序。
 
 **💡 思路**：快慢指针，快指针遍历数组，遇到非零就与慢指针交换，慢指针前进。
@@ -135,6 +143,8 @@ function moveZeroes(nums) {
 ---
 
 ### 11. 盛最多水的容器 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/container-with-most-water/)
 
 给定 n 个非负整数，找出能容纳最多水的两条线。
 
@@ -165,6 +175,8 @@ function maxArea(height) {
 ---
 
 ### 15. 三数之和 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/3sum/)
 
 找出所有和为 0 的三元组。
 
@@ -207,6 +219,8 @@ function threeSum(nums) {
 
 ### 42. 接雨水 (Hard)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/trapping-rain-water/)
+
 给定 n 个非负整数表示柱子高度，计算能接多少雨水。
 
 **💡 思路**：双指针从两端向中间移动，每个位置能接的水 = min(左侧最高, 右侧最高) - 当前高度。
@@ -247,6 +261,8 @@ function trap(height) {
 
 ### 3. 无重复字符的最长子串 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)
+
 找出不含重复字符的最长子串长度。
 
 **💡 思路**：滑动窗口 + Set，右指针扩展窗口，遇到重复字符时左指针收缩直到无重复。
@@ -274,6 +290,8 @@ function lengthOfLongestSubstring(s) {
 ---
 
 ### 438. 找到字符串中所有字母异位词 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/find-all-anagrams-in-a-string/)
 
 找到 s 中所有 p 的异位词的起始索引。
 
@@ -313,6 +331,8 @@ function findAnagrams(s, p) {
 
 ### 560. 和为 K 的子数组 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/subarray-sum-equals-k/)
+
 找到和为 k 的连续子数组的个数。
 
 **💡 思路**：前缀和 + 哈希表，若 prefixSum[j] - prefixSum[i] = k，则 i+1 到 j 的子数组和为 k。
@@ -339,6 +359,8 @@ function subarraySum(nums, k) {
 ---
 
 ### 239. 滑动窗口最大值 (Hard)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/sliding-window-maximum/)
 
 返回滑动窗口中的最大值数组。
 
@@ -376,6 +398,8 @@ function maxSlidingWindow(nums, k) {
 ---
 
 ### 76. 最小覆盖子串 (Hard)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/minimum-window-substring/)
 
 找出 s 中包含 t 所有字符的最小子串。
 
@@ -435,6 +459,8 @@ function minWindow(s, t) {
 
 ### 53. 最大子数组和 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/maximum-subarray/)
+
 找出具有最大和的连续子数组。
 
 **💡 思路**：动态规划/Kadane 算法，当前位置最大和 = max(当前值, 当前值 + 前一位置最大和)。
@@ -458,6 +484,8 @@ function maxSubArray(nums) {
 ---
 
 ### 56. 合并区间 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/merge-intervals/)
 
 合并所有重叠的区间。
 
@@ -488,6 +516,8 @@ function merge(intervals) {
 
 ### 189. 轮转数组 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/rotate-array/)
+
 将数组向右轮转 k 个位置。
 
 **💡 思路**：三次翻转法——先整体翻转，再分别翻转前 k 个和后 n-k 个元素。
@@ -515,6 +545,8 @@ function rotate(nums, k) {
 ---
 
 ### 238. 除自身以外数组的乘积 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/product-of-array-except-self/)
 
 返回数组，其中每个元素是其他所有元素的乘积。
 
@@ -549,6 +581,8 @@ function productExceptSelf(nums) {
 
 ### 41. 缺失的第一个正数 (Hard)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/first-missing-positive/)
+
 找出未出现的最小正整数。
 
 **💡 思路**：原地哈希，将数字 x 放到索引 x-1 的位置，然后找第一个 nums[i] ≠ i+1 的位置。
@@ -582,6 +616,8 @@ function firstMissingPositive(nums) {
 ## 六、矩阵
 
 ### 73. 矩阵置零 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/set-matrix-zeroes/)
 
 如果一个元素为 0，则将其所在行列都设为 0。
 
@@ -627,6 +663,8 @@ function setZeroes(matrix) {
 
 ### 54. 螺旋矩阵 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/spiral-matrix/)
+
 按螺旋顺序返回矩阵所有元素。
 
 **💡 思路**：定义上下左右四个边界，按右→下→左→上顺序遍历，每遍历完一边收缩对应边界。
@@ -665,6 +703,8 @@ function spiralOrder(matrix) {
 
 ### 48. 旋转图像 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/rotate-image/)
+
 将图像顺时针旋转 90 度。
 
 **💡 思路**：先沿主对角线转置矩阵，再将每行水平翻转，即可实现顺时针旋转 90 度。
@@ -692,6 +732,8 @@ function rotate(matrix) {
 ---
 
 ### 240. 搜索二维矩阵 II (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/search-a-2d-matrix-ii/)
 
 在每行每列递增的矩阵中搜索目标值。
 
@@ -723,6 +765,8 @@ function searchMatrix(matrix, target) {
 
 ### 160. 相交链表 (Easy)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/intersection-of-two-linked-lists/)
+
 找到两个链表相交的起始节点。
 
 **💡 思路**：双指针分别遍历两链表，到末尾后切换到另一链表头，相遇点即为交点（路程相等）。
@@ -745,6 +789,8 @@ function getIntersectionNode(headA, headB) {
 ---
 
 ### 206. 反转链表 (Easy)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/reverse-linked-list/)
 
 反转单链表。
 
@@ -770,6 +816,8 @@ function reverseList(head) {
 ---
 
 ### 234. 回文链表 (Easy)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/palindrome-linked-list/)
 
 判断链表是否为回文链表。
 
@@ -811,6 +859,8 @@ function isPalindrome(head) {
 
 ### 141. 环形链表 (Easy)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/linked-list-cycle/)
+
 判断链表是否有环。
 
 **💡 思路**：快慢指针，快指针每次走两步，慢指针每次走一步，若有环必相遇。
@@ -834,6 +884,8 @@ function hasCycle(head) {
 ---
 
 ### 142. 环形链表 II (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/linked-list-cycle-ii/)
 
 找到环的入口节点。
 
@@ -867,6 +919,8 @@ function detectCycle(head) {
 
 ### 21. 合并两个有序链表 (Easy)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/merge-two-sorted-lists/)
+
 合并两个升序链表为一个新链表。
 
 **💡 思路**：双指针比较两链表当前节点，较小者接入结果链表，直到一方遍历完。
@@ -898,6 +952,8 @@ function mergeTwoLists(l1, l2) {
 
 ### 2. 两数相加 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/add-two-numbers/)
+
 两个链表表示的数字相加。
 
 **💡 思路**：模拟加法，从低位到高位逐位相加，注意进位处理，直到两链表和进位都处理完。
@@ -927,6 +983,8 @@ function addTwoNumbers(l1, l2) {
 
 ### 19. 删除链表的倒数第 N 个节点 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/)
+
 **💡 思路**：快指针先走 n+1 步，然后快慢指针同时走，快指针到末尾时慢指针正好在目标前一位。
 
 ```javascript
@@ -953,6 +1011,8 @@ function removeNthFromEnd(head, n) {
 ---
 
 ### 24. 两两交换链表中的节点 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/swap-nodes-in-pairs/)
 
 **💡 思路**：迭代法，每次处理两个节点的交换，用 prev 指针连接交换后的节点对。
 
@@ -981,6 +1041,8 @@ function swapPairs(head) {
 ---
 
 ### 25. K 个一组翻转链表 (Hard)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/reverse-nodes-in-k-group/)
 
 **💡 思路**：先找到每组的第 k 个节点，然后对这 k 个节点进行翻转，递归或迭代处理下一组。
 
@@ -1027,6 +1089,8 @@ function getKth(node, k) {
 
 ### 138. 随机链表的复制 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/copy-list-with-random-pointer/)
+
 **💡 思路**：用哈希表建立原节点到新节点的映射，第二次遍历时设置 next 和 random 指针。
 
 ```javascript
@@ -1057,6 +1121,8 @@ function copyRandomList(head) {
 ---
 
 ### 148. 排序链表 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/sort-list/)
 
 归并排序链表。
 
@@ -1110,6 +1176,8 @@ function mergeTwoLists(l1, l2) {
 
 ### 23. 合并 K 个升序链表 (Hard)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/merge-k-sorted-lists/)
+
 **💡 思路**：分治法，两两合并链表，递归将问题规模减半，最终合并为一个有序链表。
 
 ```javascript
@@ -1135,6 +1203,8 @@ function mergeKLists(lists) {
 ---
 
 ### 146. LRU 缓存 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/lru-cache/)
 
 **💡 思路**：用 Map 保持插入顺序，get/put 时删除再重新插入实现"最近使用"，超容量时删除最早的。
 
@@ -1173,6 +1243,8 @@ class LRUCache {
 
 ### 94. 二叉树的中序遍历 (Easy)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/binary-tree-inorder-traversal/)
+
 **💡 思路**：迭代法，用栈模拟递归，先将左子树全部入栈，弹出访问后转向右子树。
 
 ```javascript
@@ -1199,6 +1271,8 @@ function inorderTraversal(root) {
 
 ### 104. 二叉树的最大深度 (Easy)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/maximum-depth-of-binary-tree/)
+
 **💡 思路**：递归，树的最大深度 = 1 + max(左子树深度, 右子树深度)。
 
 ```javascript
@@ -1211,6 +1285,8 @@ function maxDepth(root) {
 ---
 
 ### 226. 翻转二叉树 (Easy)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/invert-binary-tree/)
 
 **💡 思路**：递归交换每个节点的左右子树，前序或后序遍历时交换即可。
 
@@ -1229,6 +1305,8 @@ function invertTree(root) {
 ---
 
 ### 101. 对称二叉树 (Easy)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/symmetric-tree/)
 
 **💡 思路**：递归比较左右子树是否镜像，即左子树的左 = 右子树的右，左子树的右 = 右子树的左。
 
@@ -1249,6 +1327,8 @@ function isSymmetric(root) {
 ---
 
 ### 543. 二叉树的直径 (Easy)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/diameter-of-binary-tree/)
 
 **💡 思路**：直径 = 某节点左子树深度 + 右子树深度的最大值，在计算深度时更新全局最大值。
 
@@ -1272,6 +1352,8 @@ function diameterOfBinaryTree(root) {
 ---
 
 ### 102. 二叉树的层序遍历 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/binary-tree-level-order-traversal/)
 
 **💡 思路**：BFS，用队列逐层处理节点，每层处理前记录队列长度，处理该层所有节点后进入下一层。
 
@@ -1304,6 +1386,8 @@ function levelOrder(root) {
 
 ### 108. 将有序数组转换为二叉搜索树 (Easy)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/)
+
 **💡 思路**：取中间元素作为根，左半部分递归构建左子树，右半部分递归构建右子树。
 
 ```javascript
@@ -1327,6 +1411,8 @@ function sortedArrayToBST(nums) {
 
 ### 98. 验证二叉搜索树 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/validate-binary-search-tree/)
+
 **💡 思路**：递归时传递当前节点的合法范围 (min, max)，每个节点值必须在范围内。
 
 ```javascript
@@ -1345,6 +1431,8 @@ function isValidBST(root) {
 ---
 
 ### 230. 二叉搜索树中第 K 小的元素 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/kth-smallest-element-in-a-bst/)
 
 **💡 思路**：BST 中序遍历结果是升序的，中序遍历到第 k 个节点即为答案。
 
@@ -1369,6 +1457,8 @@ function kthSmallest(root, k) {
 ---
 
 ### 199. 二叉树的右视图 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/binary-tree-right-side-view/)
 
 **💡 思路**：层序遍历，每层只取最后一个节点的值（或 DFS 时优先访问右子树）。
 
@@ -1398,6 +1488,8 @@ function rightSideView(root) {
 
 ### 114. 二叉树展开为链表 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/flatten-binary-tree-to-linked-list/)
+
 **💡 思路**：对于每个节点，将左子树插入到右子树的位置，原右子树接到左子树的最右节点。
 
 ```javascript
@@ -1420,6 +1512,8 @@ function flatten(root) {
 ---
 
 ### 105. 从前序与中序遍历序列构造二叉树 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
 
 **💡 思路**：前序第一个是根，在中序中找到根的位置，左边是左子树，右边是右子树，递归构建。
 
@@ -1450,6 +1544,8 @@ function buildTree(preorder, inorder) {
 
 ### 437. 路径总和 III (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/path-sum-iii/)
+
 **💡 思路**：前缀和 + 回溯，用哈希表记录路径上的前缀和，当前前缀和 - 目标值存在则找到一条路径。
 
 ```javascript
@@ -1479,6 +1575,8 @@ function pathSum(root, targetSum) {
 
 ### 236. 二叉树的最近公共祖先 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-tree/)
+
 **💡 思路**：递归查找，若当前节点是 p 或 q 则返回；若 p、q 分别在左右子树则当前节点是 LCA。
 
 ```javascript
@@ -1496,6 +1594,8 @@ function lowestCommonAncestor(root, p, q) {
 ---
 
 ### 124. 二叉树中的最大路径和 (Hard)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
 
 **💡 思路**：递归计算每个节点的最大贡献值（只能选左或右），同时更新经过该节点的最大路径和。
 
@@ -1524,6 +1624,8 @@ function maxPathSum(root) {
 ## 九、图论
 
 ### 200. 岛屿数量 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/number-of-islands/)
 
 **💡 思路**：遍历网格，遇到陆地就计数并 DFS/BFS 将连通的陆地标记为已访问（沉岛）。
 
@@ -1558,6 +1660,8 @@ function numIslands(grid) {
 ---
 
 ### 994. 腐烂的橘子 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/rotting-oranges/)
 
 **💡 思路**：多源 BFS，所有腐烂橘子同时入队作为起点，每分钟向四周扩散，统计扩散轮数。
 
@@ -1607,6 +1711,8 @@ function orangesRotting(grid) {
 
 ### 207. 课程表 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/course-schedule/)
+
 **💡 思路**：拓扑排序，用入度数组和邻接表建图，BFS 从入度为 0 的节点开始，检查能否完成所有课程。
 
 ```javascript
@@ -1643,6 +1749,8 @@ function canFinish(numCourses, prerequisites) {
 ---
 
 ### 208. 实现 Trie（前缀树）(Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/implement-trie-prefix-tree/)
 
 **💡 思路**：用嵌套对象表示树结构，每个节点包含子节点和结束标记，按字符逐层查找/插入。
 
@@ -1687,6 +1795,8 @@ class Trie {
 
 ### 46. 全排列 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/permutations/)
+
 **💡 思路**：回溯，每次选择一个未使用的数加入路径，递归后撤销选择，直到路径长度等于数组长度。
 
 ```javascript
@@ -1719,6 +1829,8 @@ function permute(nums) {
 
 ### 78. 子集 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/subsets/)
+
 **💡 思路**：回溯，每个位置可选可不选，从当前位置向后遍历避免重复，每个状态都是一个有效子集。
 
 ```javascript
@@ -1743,6 +1855,8 @@ function subsets(nums) {
 ---
 
 ### 17. 电话号码的字母组合 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/letter-combinations-of-a-phone-number/)
 
 **💡 思路**：回溯，建立数字到字母的映射，每个数字依次选择一个字母加入路径，直到处理完所有数字。
 
@@ -1777,6 +1891,8 @@ function letterCombinations(digits) {
 
 ### 39. 组合总和 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/combination-sum/)
+
 **💡 思路**：回溯，同一个数可以重复选，所以递归时从当前位置开始而非下一位置，剪枝条件为和超过目标。
 
 ```javascript
@@ -1806,6 +1922,8 @@ function combinationSum(candidates, target) {
 
 ### 22. 括号生成 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/generate-parentheses/)
+
 **💡 思路**：回溯，左括号数量小于 n 时可加左括号，右括号数量小于左括号时可加右括号。
 
 ```javascript
@@ -1830,6 +1948,8 @@ function generateParenthesis(n) {
 ---
 
 ### 79. 单词搜索 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/word-search/)
 
 **💡 思路**：DFS + 回溯，从每个格子出发尝试匹配单词，访问过的格子临时标记，回溯时恢复。
 
@@ -1864,6 +1984,8 @@ function exist(board, word) {
 ---
 
 ### 131. 分割回文串 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/palindrome-partitioning/)
 
 **💡 思路**：回溯，每次尝试从当前位置切出一个回文子串，若是回文则加入路径并递归处理剩余部分。
 
@@ -1903,6 +2025,8 @@ function partition(s) {
 ---
 
 ### 51. N 皇后 (Hard)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/n-queens/)
 
 **💡 思路**：回溯，逐行放置皇后，检查列和两条对角线是否有冲突，有效则递归下一行。
 
@@ -1950,6 +2074,8 @@ function solveNQueens(n) {
 
 ### 35. 搜索插入位置 (Easy)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/search-insert-position/)
+
 **💡 思路**：标准二分查找，找到则返回位置，否则 left 指针停在第一个大于 target 的位置。
 
 ```javascript
@@ -1971,6 +2097,8 @@ function searchInsert(nums, target) {
 ---
 
 ### 74. 搜索二维矩阵 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/search-a-2d-matrix/)
 
 **💡 思路**：将二维矩阵看作一维有序数组，用 mid / n 和 mid % n 转换坐标，进行二分查找。
 
@@ -1995,6 +2123,8 @@ function searchMatrix(matrix, target) {
 ---
 
 ### 34. 在排序数组中查找元素的第一个和最后一个位置 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/)
 
 **💡 思路**：两次二分，第一次找左边界（第一个 >= target 的位置），第二次找右边界或直接向右扩展。
 
@@ -2023,6 +2153,8 @@ function searchRange(nums, target) {
 ---
 
 ### 33. 搜索旋转排序数组 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/search-in-rotated-sorted-array/)
 
 **💡 思路**：二分时判断哪半边有序，若 target 在有序半边范围内则去该半边，否则去另一半边。
 
@@ -2058,6 +2190,8 @@ function search(nums, target) {
 
 ### 153. 寻找旋转排序数组中的最小值 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array/)
+
 **💡 思路**：二分，比较 mid 与 right，若 mid > right 则最小值在右半边，否则在左半边（含 mid）。
 
 ```javascript
@@ -2081,6 +2215,8 @@ function findMin(nums) {
 ---
 
 ### 4. 寻找两个正序数组的中位数 (Hard)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/median-of-two-sorted-arrays/)
 
 **💡 思路**：二分查找分割点，使得左半部分元素个数等于右半部分，且左边最大 ≤ 右边最小。
 
@@ -2122,6 +2258,8 @@ function findMedianSortedArrays(nums1, nums2) {
 
 ### 20. 有效的括号 (Easy)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/valid-parentheses/)
+
 **💡 思路**：遍历字符串，左括号入栈，右括号与栈顶匹配则出栈，最后栈空则有效。
 
 ```javascript
@@ -2144,6 +2282,8 @@ function isValid(s) {
 ---
 
 ### 155. 最小栈 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/min-stack/)
 
 **💡 思路**：用辅助栈同步记录每个状态下的最小值，主栈入栈时辅助栈也入栈当前最小值。
 
@@ -2182,6 +2322,8 @@ class MinStack {
 
 ### 394. 字符串解码 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/decode-string/)
+
 **💡 思路**：用两个栈分别存数字和字符串，遇到 `[` 入栈，遇到 `]` 出栈并重复拼接。
 
 ```javascript
@@ -2214,6 +2356,8 @@ function decodeString(s) {
 
 ### 739. 每日温度 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/daily-temperatures/)
+
 **💡 思路**：单调递减栈存索引，遍历时将所有比当前温度低的出栈并计算天数差。
 
 ```javascript
@@ -2237,6 +2381,8 @@ function dailyTemperatures(temperatures) {
 ---
 
 ### 84. 柱状图中最大的矩形 (Hard)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/largest-rectangle-in-histogram/)
 
 **💡 思路**：单调递增栈，对于每个柱子找左右第一个更矮的位置，面积 = 高度 × (右边界 - 左边界 - 1)。
 
@@ -2270,6 +2416,8 @@ function largestRectangleArea(heights) {
 ## 十三、堆
 
 ### 215. 数组中的第 K 个最大元素 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/kth-largest-element-in-an-array/)
 
 **💡 思路**：快速选择算法，类似快排分区，根据 pivot 位置决定在左半边还是右半边继续查找。
 
@@ -2306,6 +2454,8 @@ function findKthLargest(nums, k) {
 
 ### 347. 前 K 个高频元素 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/top-k-frequent-elements/)
+
 **💡 思路**：统计频率后用桶排序，以频率为索引放入桶中，从高频桶向低频桶收集 k 个元素。
 
 ```javascript
@@ -2333,6 +2483,8 @@ function topKFrequent(nums, k) {
 ---
 
 ### 295. 数据流的中位数 (Hard)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/find-median-from-data-stream/)
 
 **💡 思路**：用大顶堆存较小一半，小顶堆存较大一半，保持两堆平衡，中位数从堆顶获取。
 
@@ -2371,6 +2523,8 @@ class MedianFinder {
 
 ### 121. 买卖股票的最佳时机 (Easy)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/)
+
 **💡 思路**：遍历时记录到目前为止的最低价，用当前价减最低价更新最大利润。
 
 ```javascript
@@ -2391,6 +2545,8 @@ function maxProfit(prices) {
 
 ### 55. 跳跃游戏 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/jump-game/)
+
 **💡 思路**：贪心维护能到达的最远位置，若某位置超过最远位置则无法到达，否则更新最远位置。
 
 ```javascript
@@ -2409,6 +2565,8 @@ function canJump(nums) {
 ---
 
 ### 45. 跳跃游戏 II (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/jump-game-ii/)
 
 **💡 思路**：贪心，在当前跳跃范围内找能跳最远的位置作为下一跳的终点，到达边界时跳数+1。
 
@@ -2434,6 +2592,8 @@ function jump(nums) {
 ---
 
 ### 763. 划分字母区间 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/partition-labels/)
 
 **💡 思路**：先记录每个字母最后出现的位置，遍历时更新当前片段的结束位置，到达结束位置时切分。
 
@@ -2466,6 +2626,8 @@ function partitionLabels(s) {
 
 ### 70. 爬楼梯 (Easy)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/climbing-stairs/)
+
 **💡 思路**：斐波那契数列，到达第 n 阶的方法数 = 到达第 n-1 阶 + 到达第 n-2 阶的方法数。
 
 ```javascript
@@ -2487,6 +2649,8 @@ function climbStairs(n) {
 ---
 
 ### 118. 杨辉三角 (Easy)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/pascals-triangle/)
 
 **💡 思路**：每行首尾为 1，中间元素 = 上一行相邻两元素之和，逐行构建。
 
@@ -2514,6 +2678,8 @@ function generate(numRows) {
 
 ### 198. 打家劫舍 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/house-robber/)
+
 **💡 思路**：dp[i] = max(dp[i-1], dp[i-2] + nums[i])，每家可选偷或不偷，取最大值。
 
 ```javascript
@@ -2537,6 +2703,8 @@ function rob(nums) {
 
 ### 279. 完全平方数 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/perfect-squares/)
+
 **💡 思路**：完全背包问题，dp[i] = min(dp[i], dp[i - j²] + 1)，枚举所有可用的完全平方数。
 
 ```javascript
@@ -2557,6 +2725,8 @@ function numSquares(n) {
 ---
 
 ### 322. 零钱兑换 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/coin-change/)
 
 **💡 思路**：完全背包，dp[i] 表示凑成金额 i 的最少硬币数，枚举每种硬币更新状态。
 
@@ -2580,6 +2750,8 @@ function coinChange(coins, amount) {
 ---
 
 ### 139. 单词拆分 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/word-break/)
 
 **💡 思路**：dp[i] 表示前 i 个字符能否被拆分，枚举分割点 j，若 dp[j] 为真且 s[j:i] 在字典中则 dp[i] 为真。
 
@@ -2605,6 +2777,8 @@ function wordBreak(s, wordDict) {
 ---
 
 ### 300. 最长递增子序列 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/longest-increasing-subsequence/)
 
 **💡 思路**：贪心 + 二分，维护一个数组 tails，tails[i] 是长度为 i+1 的 LIS 的最小末尾元素。
 
@@ -2632,6 +2806,8 @@ function lengthOfLIS(nums) {
 
 ### 152. 乘积最大子数组 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/maximum-product-subarray/)
+
 **💡 思路**：同时维护以当前位置结尾的最大和最小乘积（因为负数可能翻转大小关系）。
 
 ```javascript
@@ -2654,6 +2830,8 @@ function maxProduct(nums) {
 ---
 
 ### 416. 分割等和子集 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/partition-equal-subset-sum/)
 
 **💡 思路**：0-1 背包，目标容量为总和的一半，dp[j] 表示能否恰好凑出和为 j。
 
@@ -2679,6 +2857,8 @@ function canPartition(nums) {
 ---
 
 ### 32. 最长有效括号 (Hard)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/longest-valid-parentheses/)
 
 **💡 思路**：用栈存索引，栈底始终保留最后一个未匹配右括号的位置，用于计算有效长度。
 
@@ -2710,6 +2890,8 @@ function longestValidParentheses(s) {
 
 ### 62. 不同路径 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/unique-paths/)
+
 **💡 思路**：dp[i][j] = dp[i-1][j] + dp[i][j-1]，可优化为一维数组，每个位置累加左边的值。
 
 ```javascript
@@ -2729,6 +2911,8 @@ function uniquePaths(m, n) {
 ---
 
 ### 64. 最小路径和 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/minimum-path-sum/)
 
 **💡 思路**：dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1])，可原地修改节省空间。
 
@@ -2752,6 +2936,8 @@ function minPathSum(grid) {
 ---
 
 ### 5. 最长回文子串 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/longest-palindromic-substring/)
 
 **💡 思路**：中心扩展法，枚举每个位置作为中心向两边扩展，分别处理奇偶长度的回文。
 
@@ -2783,6 +2969,8 @@ function longestPalindrome(s) {
 
 ### 1143. 最长公共子序列 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/longest-common-subsequence/)
+
 **💡 思路**：dp[i][j] 表示 text1 前 i 个和 text2 前 j 个字符的 LCS 长度，相等则 +1，否则取较大值。
 
 ```javascript
@@ -2807,6 +2995,8 @@ function longestCommonSubsequence(text1, text2) {
 ---
 
 ### 72. 编辑距离 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/edit-distance/)
 
 **💡 思路**：dp[i][j] 表示 word1 前 i 个变成 word2 前 j 个的最少操作，相等则不操作，否则取插入/删除/替换的最小值 +1。
 
@@ -2838,6 +3028,8 @@ function minDistance(word1, word2) {
 
 ### 136. 只出现一次的数字 (Easy)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/single-number/)
+
 **💡 思路**：异或运算，相同的数异或为 0，0 异或任何数为该数本身，所有数异或结果即为单独的数。
 
 ```javascript
@@ -2849,6 +3041,8 @@ function singleNumber(nums) {
 ---
 
 ### 169. 多数元素 (Easy)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/majority-element/)
 
 **💡 思路**：摩尔投票法，维护候选人和计数，相同则 +1，不同则 -1，归零时换候选人。
 
@@ -2876,6 +3070,8 @@ function majorityElement(nums) {
 
 ### 75. 颜色分类 (Medium)
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/sort-colors/)
+
 **💡 思路**：荷兰国旗问题，三指针分别指向 0 区末尾、当前位置、2 区开头，根据当前值交换。
 
 ```javascript
@@ -2900,6 +3096,8 @@ function sortColors(nums) {
 ---
 
 ### 31. 下一个排列 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/next-permutation/)
 
 **💡 思路**：从右向左找第一个递减的数，与其右侧第一个更大的数交换，然后反转其右侧部分。
 
@@ -2930,6 +3128,8 @@ function nextPermutation(nums) {
 ---
 
 ### 287. 寻找重复数 (Medium)
+
+🔗 [LeetCode 链接](https://leetcode.cn/problems/find-the-duplicate-number/)
 
 **💡 思路**：快慢指针（Floyd 判圈），将数组看作链表（值为 next 指针），找环的入口即为重复数。
 
