@@ -50,6 +50,30 @@ function twoSum(nums, target) {
 }
 ```
 
+**💡 思路**：使用双指针需要先保存原数组索引
+
+```javascript
+function twoSum(nums, target) {
+	const indexed = nums.map((val, idx) => ({val, idx}));
+	
+	indexed.sort((a, b) => a.val - b.val);
+	
+	let left = 0, right = indexed.length - 1;
+	while(left < right) {
+		const sum = indexed[left].val + indexed[right].val;
+		
+		if(sum === target) {
+			return [indexed[left].idx, indexed[right].idx];
+		} else if(sum < target) {
+			left ++;
+		} else {
+			right--;
+		}
+	}
+	return []
+}
+```
+
 **复杂度**：时间 O(n)，空间 O(n)
 
 ---
