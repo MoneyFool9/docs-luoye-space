@@ -38,15 +38,15 @@
 
 ```javascript
 function twoSum(nums, target) {
-  const map = new Map();
-  for (let i = 0; i < nums.length; i++) {
-    const complement = target - nums[i];
-    if (map.has(complement)) {
-      return [map.get(complement), i];
+  const map = new Map();                    // 存「值 → 下标」，便于 O(1) 查找
+  for (let i = 0; i < nums.length; i++) {   // 遍历每个数
+    const complement = target - nums[i];    // 当前数需要的「另一半」
+    if (map.has(complement)) {              // 若之前已见过 complement
+      return [map.get(complement), i];      // 直接返回两下标
     }
-    map.set(nums[i], i);
+    map.set(nums[i], i);                    // 否则记录当前数及其下标
   }
-  return [];
+  return [];                                // 无解
 }
 ```
 
@@ -88,15 +88,15 @@ function twoSum(nums, target) {
 
 ```javascript
 function groupAnagrams(strs) {
-  const map = new Map();
+  const map = new Map();                    // key: 排序后的串, value: 原串数组
   for (const str of strs) {
-    const key = [...str].sort().join('');
+    const key = [...str].sort().join('');   // 异位词排序后必相同，作为 key
     if (!map.has(key)) {
-      map.set(key, []);
+      map.set(key, []);                     // 该 key 首次出现，建空数组
     }
-    map.get(key).push(str);
+    map.get(key).push(str);                 // 当前串归入该组
   }
-  return [...map.values()];
+  return [...map.values()];                 // 返回所有分组（每组是字符串数组）
 }
 ```
 
@@ -114,24 +114,19 @@ function groupAnagrams(strs) {
 
 ```javascript
 function longestConsecutive(nums) {
-  const set = new Set(nums);
+  const set = new Set(nums);                // 去重 + O(1) 查找
   let maxLength = 0;
-  
   for (const num of set) {
-    // 只从序列起点开始计算
-    if (!set.has(num - 1)) {
+    if (!set.has(num - 1)) {               // 只从「序列起点」开始数，避免重复算
       let currentNum = num;
       let currentLength = 1;
-      
-      while (set.has(currentNum + 1)) {
+      while (set.has(currentNum + 1)) {    // 往后连续能走多远
         currentNum++;
         currentLength++;
       }
-      
       maxLength = Math.max(maxLength, currentLength);
     }
   }
-  
   return maxLength;
 }
 ```
@@ -152,11 +147,11 @@ function longestConsecutive(nums) {
 
 ```javascript
 function moveZeroes(nums) {
-  let slow = 0;
+  let slow = 0;                            // 非零区末尾，即下一个可放非零的下标
   for (let fast = 0; fast < nums.length; fast++) {
-    if (nums[fast] !== 0) {
+    if (nums[fast] !== 0) {                // 遇到非零就往前挪到 slow 位置
       [nums[slow], nums[fast]] = [nums[fast], nums[slow]];
-      slow++;
+      slow++;                              // 非零区右扩一位
     }
   }
 }
@@ -176,20 +171,17 @@ function moveZeroes(nums) {
 
 ```javascript
 function maxArea(height) {
-  let left = 0, right = height.length - 1;
+  let left = 0, right = height.length - 1;  // 两端指针
   let maxWater = 0;
-  
   while (left < right) {
     const water = Math.min(height[left], height[right]) * (right - left);
-    maxWater = Math.max(maxWater, water);
-    
-    if (height[left] < height[right]) {
+    maxWater = Math.max(maxWater, water);   // 更新当前最大面积
+    if (height[left] < height[right]) {     // 移动短边才可能让面积变大
       left++;
     } else {
       right--;
     }
   }
-  
   return maxWater;
 }
 ```
@@ -208,31 +200,26 @@ function maxArea(height) {
 
 ```javascript
 function threeSum(nums) {
-  nums.sort((a, b) => a - b);
+  nums.sort((a, b) => a - b);               // 排序后才能用双指针
   const result = [];
-  
   for (let i = 0; i < nums.length - 2; i++) {
-    if (i > 0 && nums[i] === nums[i - 1]) continue;
-    
-    let left = i + 1, right = nums.length - 1;
-    
+    if (i > 0 && nums[i] === nums[i - 1]) continue;  // 固定数去重
+    let left = i + 1, right = nums.length - 1;       // 在 i 右侧找两数
     while (left < right) {
       const sum = nums[i] + nums[left] + nums[right];
-      
       if (sum === 0) {
         result.push([nums[i], nums[left], nums[right]]);
-        while (left < right && nums[left] === nums[left + 1]) left++;
+        while (left < right && nums[left] === nums[left + 1]) left++;   // 左去重
         while (left < right && nums[right] === nums[right - 1]) right--;
         left++;
         right--;
       } else if (sum < 0) {
-        left++;
+        left++;                             // 和太小，左指针右移
       } else {
-        right--;
+        right--;                            // 和太大，右指针左移
       }
     }
   }
-  
   return result;
 }
 ```
@@ -252,15 +239,15 @@ function threeSum(nums) {
 ```javascript
 function trap(height) {
   let left = 0, right = height.length - 1;
-  let leftMax = 0, rightMax = 0;
+  let leftMax = 0, rightMax = 0;            // 左/右已扫描过的最高
   let water = 0;
   
   while (left < right) {
-    if (height[left] < height[right]) {
+    if (height[left] < height[right]) {     // 哪边矮先算哪边（矮边决定水位）
       if (height[left] >= leftMax) {
-        leftMax = height[left];
+        leftMax = height[left];             // 更新左侧最高
       } else {
-        water += leftMax - height[left];
+        water += leftMax - height[left];    // 当前格可接水
       }
       left++;
     } else {
@@ -272,7 +259,6 @@ function trap(height) {
       right--;
     }
   }
-  
   return water;
 }
 ```
@@ -293,18 +279,16 @@ function trap(height) {
 
 ```javascript
 function lengthOfLongestSubstring(s) {
-  const set = new Set();
+  const set = new Set();                    // 当前窗口内的字符集合
   let left = 0, maxLen = 0;
-  
   for (let right = 0; right < s.length; right++) {
-    while (set.has(s[right])) {
+    while (set.has(s[right])) {             // 右字符已存在则收缩左边界
       set.delete(s[left]);
       left++;
     }
-    set.add(s[right]);
-    maxLen = Math.max(maxLen, right - left + 1);
+    set.add(s[right]);                     // 将当前字符纳入窗口
+    maxLen = Math.max(maxLen, right - left + 1);  // 更新最长无重复长度
   }
-  
   return maxLen;
 }
 ```
@@ -324,25 +308,20 @@ function lengthOfLongestSubstring(s) {
 ```javascript
 function findAnagrams(s, p) {
   const result = [];
-  const pCount = new Array(26).fill(0);
-  const sCount = new Array(26).fill(0);
-  
+  const pCount = new Array(26).fill(0);     // p 中各字母出现次数
+  const sCount = new Array(26).fill(0);     // 当前窗口内各字母出现次数
   for (const c of p) {
-    pCount[c.charCodeAt(0) - 97]++;
+    pCount[c.charCodeAt(0) - 97]++;         // 统计 p 的字符频率
   }
-  
   for (let i = 0; i < s.length; i++) {
-    sCount[s[i].charCodeAt(0) - 97]++;
-    
+    sCount[s[i].charCodeAt(0) - 97]++;      // 右边界纳入新字符
     if (i >= p.length) {
-      sCount[s[i - p.length].charCodeAt(0) - 97]--;
+      sCount[s[i - p.length].charCodeAt(0) - 97]--;  // 左边界滑出，减掉旧字符
     }
-    
-    if (pCount.join() === sCount.join()) {
-      result.push(i - p.length + 1);
+    if (pCount.join() === sCount.join()) {  // 频率一致则为异位词
+      result.push(i - p.length + 1);       // 记录窗口起点下标
     }
   }
-  
   return result;
 }
 ```
@@ -363,17 +342,15 @@ function findAnagrams(s, p) {
 
 ```javascript
 function subarraySum(nums, k) {
-  const map = new Map([[0, 1]]);
+  const map = new Map([[0, 1]]);            // 前缀和 → 出现次数，前缀和 0 出现 1 次
   let sum = 0, count = 0;
-  
   for (const num of nums) {
-    sum += num;
-    if (map.has(sum - k)) {
+    sum += num;                             // 当前前缀和
+    if (map.has(sum - k)) {                 // 若存在前缀和 = sum - k，则存在区间和为 k
       count += map.get(sum - k);
     }
-    map.set(sum, (map.get(sum) || 0) + 1);
+    map.set(sum, (map.get(sum) || 0) + 1);  // 记录当前前缀和出现次数
   }
-  
   return count;
 }
 ```
@@ -381,7 +358,32 @@ function subarraySum(nums, k) {
 **复杂度**：时间 O(n)，空间 O(n)
 
 ---
+### 1109. 航班预订统计
 
+🔗 [LeetCode 链接](https://leetcode.cn/problems/corporate-flight-bookings/description/)
+
+输入航班n和预定表bookings，其中`bookings[i] = [firsti, lasti, seatsi]` 意味着在从 `firsti` 到 `lasti` （**包含** `firsti` 和 `lasti` ）的 **每个航班** 上预订了 `seatsi` 个座位，返回一个包含每个航班预定的座位总数的数组
+
+思路：使用差分数组 + 前缀和
+
+```javascript
+var corpFlightBookings = function(bookings, n) {
+    const diff = new Array(n + 1).fill(0);
+    for(const [first, last, seats] of bookings) {
+        diff[first - 1] += seats;
+        diff[last] -= seats;
+
+    }
+    const answer = new Array(n);
+    answer[0] = diff[0];
+    for(let i = 1; i < n; i++) {
+        answer[i] = answer[i - 1] + diff[i];
+
+    }
+    return answer
+
+};
+```
 ### 239. 滑动窗口最大值 (Hard)
 
 🔗 [LeetCode 链接](https://leetcode.cn/problems/sliding-window-maximum/)
@@ -393,26 +395,19 @@ function subarraySum(nums, k) {
 ```javascript
 function maxSlidingWindow(nums, k) {
   const result = [];
-  const deque = []; // 存储索引，单调递减
-  
+  const deque = [];                        // 存下标，队首到队尾对应值单调递减
   for (let i = 0; i < nums.length; i++) {
-    // 移除窗口外的元素
     if (deque.length && deque[0] <= i - k) {
-      deque.shift();
+      deque.shift();                       // 队首已滑出窗口，移除
     }
-    
-    // 保持单调递减
     while (deque.length && nums[deque[deque.length - 1]] < nums[i]) {
-      deque.pop();
+      deque.pop();                         // 队尾比当前小则弹出，保证单调减
     }
-    
-    deque.push(i);
-    
+    deque.push(i);                         // 当前下标入队尾
     if (i >= k - 1) {
-      result.push(nums[deque[0]]);
+      result.push(nums[deque[0]]);         // 队首即窗口内最大值
     }
   }
-  
   return result;
 }
 ```
@@ -431,46 +426,38 @@ function maxSlidingWindow(nums, k) {
 
 ```javascript
 function minWindow(s, t) {
-  const need = new Map();
-  const window = new Map();
-  
+  const need = new Map();                  // t 中每个字符需要的个数
+  const window = new Map();                // 当前窗口内各字符已包含的个数
   for (const c of t) {
     need.set(c, (need.get(c) || 0) + 1);
   }
-  
   let left = 0, right = 0;
-  let valid = 0;
+  let valid = 0;                           // 已满足条件的字符种数（个数达标）
   let start = 0, len = Infinity;
-  
   while (right < s.length) {
     const c = s[right];
-    right++;
-    
+    right++;                               // 右扩
     if (need.has(c)) {
       window.set(c, (window.get(c) || 0) + 1);
       if (window.get(c) === need.get(c)) {
-        valid++;
+        valid++;                           // 该字符已凑够
       }
     }
-    
-    while (valid === need.size) {
+    while (valid === need.size) {          // 窗口已包含 t 全部字符，尝试收缩
       if (right - left < len) {
         start = left;
-        len = right - left;
+        len = right - left;                // 记录更小的窗口
       }
-      
       const d = s[left];
-      left++;
-      
+      left++;                              // 左缩
       if (need.has(d)) {
         if (window.get(d) === need.get(d)) {
-          valid--;
+          valid--;                         // 该字符将不达标
         }
         window.set(d, window.get(d) - 1);
       }
     }
   }
-  
   return len === Infinity ? '' : s.substring(start, start + len);
 }
 ```
@@ -491,14 +478,12 @@ function minWindow(s, t) {
 
 ```javascript
 function maxSubArray(nums) {
-  let maxSum = nums[0];
-  let currentSum = nums[0];
-  
+  let maxSum = nums[0];                    // 全局最大子数组和
+  let currentSum = nums[0];                // 以当前元素结尾的最大子数组和
   for (let i = 1; i < nums.length; i++) {
-    currentSum = Math.max(nums[i], currentSum + nums[i]);
+    currentSum = Math.max(nums[i], currentSum + nums[i]);  // 要么重新从 i 开始，要么接上前面
     maxSum = Math.max(maxSum, currentSum);
   }
-  
   return maxSum;
 }
 ```
@@ -517,19 +502,16 @@ function maxSubArray(nums) {
 
 ```javascript
 function merge(intervals) {
-  intervals.sort((a, b) => a[0] - b[0]);
-  const result = [intervals[0]];
-  
+  intervals.sort((a, b) => a[0] - b[0]);     // 按左端点排序
+  const result = [intervals[0]];             // 先放入第一个区间
   for (let i = 1; i < intervals.length; i++) {
-    const last = result[result.length - 1];
-    
-    if (intervals[i][0] <= last[1]) {
-      last[1] = Math.max(last[1], intervals[i][1]);
+    const last = result[result.length - 1];  // 结果中最后一个区间
+    if (intervals[i][0] <= last[1]) {        // 当前与 last 有重叠
+      last[1] = Math.max(last[1], intervals[i][1]);  // 合并：右端点取较大
     } else {
-      result.push(intervals[i]);
+      result.push(intervals[i]);             // 无重叠，直接加入
     }
   }
-  
   return result;
 }
 ```
@@ -548,19 +530,17 @@ function merge(intervals) {
 
 ```javascript
 function rotate(nums, k) {
-  k = k % nums.length;
-  
-  const reverse = (left, right) => {
+  k = k % nums.length;                      // 轮转 n 次等于不转
+  const reverse = (left, right) => {        // 反转 [left, right] 闭区间
     while (left < right) {
       [nums[left], nums[right]] = [nums[right], nums[left]];
       left++;
       right--;
     }
   };
-  
-  reverse(0, nums.length - 1);
-  reverse(0, k - 1);
-  reverse(k, nums.length - 1);
+  reverse(0, nums.length - 1);               // 整体反转
+  reverse(0, k - 1);                         // 反转前 k 个
+  reverse(k, nums.length - 1);              // 反转后 n-k 个
 }
 ```
 
@@ -580,21 +560,16 @@ function rotate(nums, k) {
 function productExceptSelf(nums) {
   const n = nums.length;
   const result = new Array(n).fill(1);
-  
-  // 计算左侧乘积
-  let left = 1;
+  let left = 1;                             // 当前位置左侧所有数的乘积
   for (let i = 0; i < n; i++) {
-    result[i] = left;
-    left *= nums[i];
+    result[i] = left;                       // 先放左侧乘积
+    left *= nums[i];                        // 为下一位置更新 left
   }
-  
-  // 计算右侧乘积并合并
-  let right = 1;
+  let right = 1;                            // 当前位置右侧所有数的乘积
   for (let i = n - 1; i >= 0; i--) {
-    result[i] *= right;
-    right *= nums[i];
+    result[i] *= right;                     // 乘上右侧乘积
+    right *= nums[i];                       // 为前一位置更新 right
   }
-  
   return result;
 }
 ```
@@ -614,22 +589,17 @@ function productExceptSelf(nums) {
 ```javascript
 function firstMissingPositive(nums) {
   const n = nums.length;
-  
-  // 将数字放到正确位置：nums[i] 应该等于 i + 1
   for (let i = 0; i < n; i++) {
     while (nums[i] > 0 && nums[i] <= n && nums[nums[i] - 1] !== nums[i]) {
-      [nums[nums[i] - 1], nums[i]] = [nums[i], nums[nums[i] - 1]];
+      [nums[nums[i] - 1], nums[i]] = [nums[i], nums[nums[i] - 1]];  // 把 nums[i] 换到下标 nums[i]-1
     }
   }
-  
-  // 找到第一个不在正确位置的数
   for (let i = 0; i < n; i++) {
-    if (nums[i] !== i + 1) {
+    if (nums[i] !== i + 1) {                // 下标 i 上不是 i+1，说明 i+1 没出现过
       return i + 1;
     }
   }
-  
-  return n + 1;
+  return n + 1;                            // 1..n 都出现过，答案是 n+1
 }
 ```
 
@@ -650,32 +620,24 @@ function firstMissingPositive(nums) {
 ```javascript
 function setZeroes(matrix) {
   const m = matrix.length, n = matrix[0].length;
-  let firstRowZero = false, firstColZero = false;
-  
-  // 检查第一行和第一列
+  let firstRowZero = false, firstColZero = false;  // 第一行/列自身是否要变 0
   for (let i = 0; i < m; i++) if (matrix[i][0] === 0) firstColZero = true;
   for (let j = 0; j < n; j++) if (matrix[0][j] === 0) firstRowZero = true;
-  
-  // 用第一行和第一列记录
   for (let i = 1; i < m; i++) {
     for (let j = 1; j < n; j++) {
       if (matrix[i][j] === 0) {
-        matrix[i][0] = 0;
-        matrix[0][j] = 0;
+        matrix[i][0] = 0;                   // 用第一列标记该行要置零
+        matrix[0][j] = 0;                   // 用第一行标记该列要置零
       }
     }
   }
-  
-  // 根据标记置零
   for (let i = 1; i < m; i++) {
     for (let j = 1; j < n; j++) {
       if (matrix[i][0] === 0 || matrix[0][j] === 0) {
-        matrix[i][j] = 0;
+        matrix[i][j] = 0;                   // 根据标记置零
       }
     }
   }
-  
-  // 处理第一行和第一列
   if (firstColZero) for (let i = 0; i < m; i++) matrix[i][0] = 0;
   if (firstRowZero) for (let j = 0; j < n; j++) matrix[0][j] = 0;
 }
@@ -698,25 +660,20 @@ function spiralOrder(matrix) {
   const result = [];
   let top = 0, bottom = matrix.length - 1;
   let left = 0, right = matrix[0].length - 1;
-  
   while (top <= bottom && left <= right) {
-    for (let i = left; i <= right; i++) result.push(matrix[top][i]);
+    for (let i = left; i <= right; i++) result.push(matrix[top][i]);   // 上边：左→右
     top++;
-    
-    for (let i = top; i <= bottom; i++) result.push(matrix[i][right]);
+    for (let i = top; i <= bottom; i++) result.push(matrix[i][right]); // 右边：上→下
     right--;
-    
     if (top <= bottom) {
-      for (let i = right; i >= left; i--) result.push(matrix[bottom][i]);
+      for (let i = right; i >= left; i--) result.push(matrix[bottom][i]); // 下边：右→左
       bottom--;
     }
-    
     if (left <= right) {
-      for (let i = bottom; i >= top; i--) result.push(matrix[i][left]);
+      for (let i = bottom; i >= top; i--) result.push(matrix[i][left]);  // 左边：下→上
       left++;
     }
   }
-  
   return result;
 }
 ```
@@ -736,17 +693,13 @@ function spiralOrder(matrix) {
 ```javascript
 function rotate(matrix) {
   const n = matrix.length;
-  
-  // 转置
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
-      [matrix[i][j], matrix[j][i]] = [matrix[j][i], matrix[i][j]];
+      [matrix[i][j], matrix[j][i]] = [matrix[j][i], matrix[i][j]];  // 沿主对角线转置
     }
   }
-  
-  // 水平翻转
   for (let i = 0; i < n; i++) {
-    matrix[i].reverse();
+    matrix[i].reverse();                    // 每行水平翻转 → 顺时针 90°
   }
 }
 ```
@@ -765,18 +718,16 @@ function rotate(matrix) {
 
 ```javascript
 function searchMatrix(matrix, target) {
-  let row = 0, col = matrix[0].length - 1;
-  
+  let row = 0, col = matrix[0].length - 1;  // 从右上角出发
   while (row < matrix.length && col >= 0) {
     if (matrix[row][col] === target) {
       return true;
     } else if (matrix[row][col] > target) {
-      col--;
+      col--;                                 // 当前太大，左移（减小）
     } else {
-      row++;
+      row++;                                 // 当前太小，下移（增大）
     }
   }
-  
   return false;
 }
 ```
@@ -798,13 +749,11 @@ function searchMatrix(matrix, target) {
 ```javascript
 function getIntersectionNode(headA, headB) {
   let pA = headA, pB = headB;
-  
   while (pA !== pB) {
-    pA = pA ? pA.next : headB;
-    pB = pB ? pB.next : headA;
+    pA = pA ? pA.next : headB;               // A 走完接 B 头
+    pB = pB ? pB.next : headA;               // B 走完接 A 头，路程相等则相遇于交点
   }
-  
-  return pA;
+  return pA;                                 // 相遇点或 null
 }
 ```
 
@@ -822,16 +771,14 @@ function getIntersectionNode(headA, headB) {
 
 ```javascript
 function reverseList(head) {
-  let prev = null, curr = head;
-  
+  let prev = null, curr = head;              // prev 为已反转部分的头
   while (curr) {
-    const next = curr.next;
-    curr.next = prev;
-    prev = curr;
-    curr = next;
+    const next = curr.next;                  // 先记下后继，避免断链
+    curr.next = prev;                        // 当前指向前驱
+    prev = curr;                             // 已反转部分扩展
+    curr = next;                             // 移到下一个
   }
-  
-  return prev;
+  return prev;                               // 新头
 }
 ```
 
@@ -849,30 +796,24 @@ function reverseList(head) {
 
 ```javascript
 function isPalindrome(head) {
-  // 找中点
-  let slow = head, fast = head;
+  let slow = head, fast = head;             // 快慢指针找中点
   while (fast && fast.next) {
     slow = slow.next;
     fast = fast.next.next;
   }
-  
-  // 反转后半部分
-  let prev = null;
+  let prev = null;                          // 反转后半段
   while (slow) {
     const next = slow.next;
     slow.next = prev;
     prev = slow;
     slow = next;
   }
-  
-  // 比较
-  let left = head, right = prev;
+  let left = head, right = prev;             // 前半头、后半头（已反转）
   while (right) {
     if (left.val !== right.val) return false;
     left = left.next;
     right = right.next;
   }
-  
   return true;
 }
 ```
@@ -891,14 +832,12 @@ function isPalindrome(head) {
 
 ```javascript
 function hasCycle(head) {
-  let slow = head, fast = head;
-  
+  let slow = head, fast = head;             // 快慢指针，快走 2 步慢走 1 步
   while (fast && fast.next) {
     slow = slow.next;
     fast = fast.next.next;
-    if (slow === fast) return true;
+    if (slow === fast) return true;         // 相遇则有环
   }
-  
   return false;
 }
 ```
@@ -918,21 +857,18 @@ function hasCycle(head) {
 ```javascript
 function detectCycle(head) {
   let slow = head, fast = head;
-  
   while (fast && fast.next) {
     slow = slow.next;
     fast = fast.next.next;
-    
-    if (slow === fast) {
+    if (slow === fast) {                    // 相遇后，一个从 head 一个从相遇点同速走
       let ptr = head;
       while (ptr !== slow) {
         ptr = ptr.next;
         slow = slow.next;
       }
-      return ptr;
+      return ptr;                           // 再次相遇即为环入口
     }
   }
-  
   return null;
 }
 ```
@@ -951,12 +887,11 @@ function detectCycle(head) {
 
 ```javascript
 function mergeTwoLists(l1, l2) {
-  const dummy = new ListNode(0);
+  const dummy = new ListNode(0);            // 哑节点，方便统一处理
   let curr = dummy;
-  
   while (l1 && l2) {
     if (l1.val <= l2.val) {
-      curr.next = l1;
+      curr.next = l1;                       // 接上较小者
       l1 = l1.next;
     } else {
       curr.next = l2;
@@ -964,8 +899,7 @@ function mergeTwoLists(l1, l2) {
     }
     curr = curr.next;
   }
-  
-  curr.next = l1 || l2;
+  curr.next = l1 || l2;                     // 接上剩余段
   return dummy.next;
 }
 ```
@@ -986,17 +920,15 @@ function mergeTwoLists(l1, l2) {
 function addTwoNumbers(l1, l2) {
   const dummy = new ListNode(0);
   let curr = dummy;
-  let carry = 0;
-  
-  while (l1 || l2 || carry) {
+  let carry = 0;                            // 进位
+  while (l1 || l2 || carry) {               // 任一方未走完或还有进位就继续
     const sum = (l1?.val || 0) + (l2?.val || 0) + carry;
-    carry = Math.floor(sum / 10);
-    curr.next = new ListNode(sum % 10);
+    carry = Math.floor(sum / 10);           // 新进位
+    curr.next = new ListNode(sum % 10);    // 当前位
     curr = curr.next;
     l1 = l1?.next;
     l2 = l2?.next;
   }
-  
   return dummy.next;
 }
 ```
@@ -1013,19 +945,16 @@ function addTwoNumbers(l1, l2) {
 
 ```javascript
 function removeNthFromEnd(head, n) {
-  const dummy = new ListNode(0, head);
+  const dummy = new ListNode(0, head);       // 哑节点，方便删头
   let slow = dummy, fast = dummy;
-  
   for (let i = 0; i <= n; i++) {
-    fast = fast.next;
+    fast = fast.next;                      // 快指针先走 n+1 步
   }
-  
   while (fast) {
     slow = slow.next;
-    fast = fast.next;
+    fast = fast.next;                      // 快到底时，slow 在待删节点前一个
   }
-  
-  slow.next = slow.next.next;
+  slow.next = slow.next.next;             // 跳过倒数第 n 个
   return dummy.next;
 }
 ```
@@ -1043,19 +972,15 @@ function removeNthFromEnd(head, n) {
 ```javascript
 function swapPairs(head) {
   const dummy = new ListNode(0, head);
-  let prev = dummy;
-  
+  let prev = dummy;                         // 当前对的前驱
   while (prev.next && prev.next.next) {
     const first = prev.next;
-    const second = prev.next.next;
-    
-    first.next = second.next;
-    second.next = first;
-    prev.next = second;
-    
-    prev = first;
+    const second = prev.next.next;          // 要交换的两个节点
+    first.next = second.next;               // first 接下一对
+    second.next = first;                    // second 换到前面
+    prev.next = second;                     // 前驱接新顺序
+    prev = first;                           // 下一对的前驱
   }
-  
   return dummy.next;
 }
 ```
@@ -1073,32 +998,26 @@ function swapPairs(head) {
 ```javascript
 function reverseKGroup(head, k) {
   const dummy = new ListNode(0, head);
-  let prevGroupEnd = dummy;
-  
+  let prevGroupEnd = dummy;                 // 上一组的尾（或哑节点）
   while (true) {
-    const kth = getKth(prevGroupEnd, k);
-    if (!kth) break;
-    
-    const nextGroupStart = kth.next;
+    const kth = getKth(prevGroupEnd, k);    // 从 prevGroupEnd 往后第 k 个
+    if (!kth) break;                        // 不足 k 个则结束
+    const nextGroupStart = kth.next;       // 下一组头，也是反转后的尾的后继
     let prev = nextGroupStart;
-    let curr = prevGroupEnd.next;
-    
-    while (curr !== nextGroupStart) {
+    let curr = prevGroupEnd.next;           // 本组头
+    while (curr !== nextGroupStart) {      // 反转本组 k 个节点
       const next = curr.next;
       curr.next = prev;
       prev = curr;
       curr = next;
     }
-    
-    const tmp = prevGroupEnd.next;
-    prevGroupEnd.next = kth;
-    prevGroupEnd = tmp;
+    const tmp = prevGroupEnd.next;          // 本组原头（反转后变尾）
+    prevGroupEnd.next = kth;                // 上一组尾接本组新头
+    prevGroupEnd = tmp;                     // 本组新尾作为下一轮上一组尾
   }
-  
   return dummy.next;
 }
-
-function getKth(node, k) {
+function getKth(node, k) {                 // 从 node 往后走 k 步，返回第 k 个节点
   while (node && k > 0) {
     node = node.next;
     k--;
@@ -1120,22 +1039,18 @@ function getKth(node, k) {
 ```javascript
 function copyRandomList(head) {
   if (!head) return null;
-  
-  const map = new Map();
+  const map = new Map();                    // 原节点 → 新节点
   let curr = head;
-  
   while (curr) {
-    map.set(curr, new Node(curr.val));
+    map.set(curr, new Node(curr.val));      // 先建出所有新节点
     curr = curr.next;
   }
-  
   curr = head;
   while (curr) {
-    map.get(curr).next = map.get(curr.next) || null;
-    map.get(curr).random = map.get(curr.random) || null;
+    map.get(curr).next = map.get(curr.next) || null;   // 接 next
+    map.get(curr).random = map.get(curr.random) || null; // 接 random
     curr = curr.next;
   }
-  
   return map.get(head);
 }
 ```
@@ -1155,29 +1070,20 @@ function copyRandomList(head) {
 ```javascript
 function sortList(head) {
   if (!head || !head.next) return head;
-  
-  // 找中点
-  let slow = head, fast = head.next;
+  let slow = head, fast = head.next;        // 快慢指针找中点（slow 偏左）
   while (fast && fast.next) {
     slow = slow.next;
     fast = fast.next.next;
   }
-  
   const mid = slow.next;
-  slow.next = null;
-  
-  // 递归排序
+  slow.next = null;                         // 断成两段
   const left = sortList(head);
   const right = sortList(mid);
-  
-  // 合并
   return mergeTwoLists(left, right);
 }
-
 function mergeTwoLists(l1, l2) {
   const dummy = new ListNode(0);
   let curr = dummy;
-  
   while (l1 && l2) {
     if (l1.val <= l2.val) {
       curr.next = l1;
@@ -1188,7 +1094,6 @@ function mergeTwoLists(l1, l2) {
     }
     curr = curr.next;
   }
-  
   curr.next = l1 || l2;
   return dummy.next;
 }
@@ -1207,17 +1112,14 @@ function mergeTwoLists(l1, l2) {
 ```javascript
 function mergeKLists(lists) {
   if (!lists.length) return null;
-  
-  const merge = (left, right) => {
+  const merge = (left, right) => {          // 合并 [left, right] 区间内的链表
     if (left > right) return null;
     if (left === right) return lists[left];
-    
     const mid = Math.floor((left + right) / 2);
     const l1 = merge(left, mid);
     const l2 = merge(mid + 1, right);
     return mergeTwoLists(l1, l2);
   };
-  
   return merge(0, lists.length - 1);
 }
 ```
@@ -1236,23 +1138,20 @@ function mergeKLists(lists) {
 class LRUCache {
   constructor(capacity) {
     this.capacity = capacity;
-    this.cache = new Map();
+    this.cache = new Map();                 // Map 按插入顺序，尾部为最近使用
   }
-  
   get(key) {
     if (!this.cache.has(key)) return -1;
-    
     const value = this.cache.get(key);
     this.cache.delete(key);
-    this.cache.set(key, value);
+    this.cache.set(key, value);             // 删掉再插入，挪到「最近」
     return value;
   }
-  
   put(key, value) {
     if (this.cache.has(key)) {
-      this.cache.delete(key);
+      this.cache.delete(key);               // 已存在则先删，再插入更新顺序
     } else if (this.cache.size >= this.capacity) {
-      this.cache.delete(this.cache.keys().next().value);
+      this.cache.delete(this.cache.keys().next().value);  // 删最久未用（第一个 key）
     }
     this.cache.set(key, value);
   }
@@ -1276,17 +1175,15 @@ function inorderTraversal(root) {
   const result = [];
   const stack = [];
   let curr = root;
-  
   while (curr || stack.length) {
     while (curr) {
-      stack.push(curr);
+      stack.push(curr);                     // 一路向左入栈
       curr = curr.left;
     }
-    curr = stack.pop();
+    curr = stack.pop();                     // 弹栈即左-根-右的「根」
     result.push(curr.val);
-    curr = curr.right;
+    curr = curr.right;                      // 转向右子树
   }
-  
   return result;
 }
 ```
@@ -1301,8 +1198,8 @@ function inorderTraversal(root) {
 
 ```javascript
 function maxDepth(root) {
-  if (!root) return 0;
-  return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));
+  if (!root) return 0;                      // 空树深度 0
+  return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));  // 根 + 左右最大深度
 }
 ```
 
@@ -1317,11 +1214,9 @@ function maxDepth(root) {
 ```javascript
 function invertTree(root) {
   if (!root) return null;
-  
-  [root.left, root.right] = [root.right, root.left];
+  [root.left, root.right] = [root.right, root.left];  // 交换左右子
   invertTree(root.left);
   invertTree(root.right);
-  
   return root;
 }
 ```
@@ -1336,14 +1231,13 @@ function invertTree(root) {
 
 ```javascript
 function isSymmetric(root) {
-  const check = (left, right) => {
+  const check = (left, right) => {           // 判断两棵子树是否镜像
     if (!left && !right) return true;
     if (!left || !right) return false;
     return left.val === right.val &&
-           check(left.left, right.right) &&
-           check(left.right, right.left);
+           check(left.left, right.right) &&  // 左的左 vs 右的右
+           check(left.right, right.left);    // 左的右 vs 右的左
   };
-  
   return check(root?.left, root?.right);
 }
 ```
@@ -1358,16 +1252,14 @@ function isSymmetric(root) {
 
 ```javascript
 function diameterOfBinaryTree(root) {
-  let maxDiameter = 0;
-  
-  const depth = (node) => {
+  let maxDiameter = 0;                      // 全局最大直径
+  const depth = (node) => {                  // 返回以 node 为根的深度
     if (!node) return 0;
     const left = depth(node.left);
     const right = depth(node.right);
-    maxDiameter = Math.max(maxDiameter, left + right);
+    maxDiameter = Math.max(maxDiameter, left + right);  // 经过 node 的直径
     return 1 + Math.max(left, right);
   };
-  
   depth(root);
   return maxDiameter;
 }
@@ -1384,24 +1276,19 @@ function diameterOfBinaryTree(root) {
 ```javascript
 function levelOrder(root) {
   if (!root) return [];
-  
   const result = [];
   const queue = [root];
-  
   while (queue.length) {
     const level = [];
-    const size = queue.length;
-    
+    const size = queue.length;               // 当前层节点数
     for (let i = 0; i < size; i++) {
       const node = queue.shift();
       level.push(node.val);
       if (node.left) queue.push(node.left);
       if (node.right) queue.push(node.right);
     }
-    
     result.push(level);
   }
-  
   return result;
 }
 ```
@@ -2808,22 +2695,50 @@ function wordBreak(s, wordDict) {
 
 ```javascript
 function lengthOfLIS(nums) {
+  // 初始化tails数组，维护不同长度递增子序列的最小末尾元素
   const tails = [];
-  
+  // 遍历原数组的每一个数组
   for (const num of nums) {
+    // 二分查找的左右边界：left从0开始，right初始为tails的长度
+    // 左闭右开区间 [left,right)
     let left = 0, right = tails.length;
-    
+    // 二分查找核心循环：找到第一个>=num的位置left
     while (left < right) {
       const mid = Math.floor((left + right) / 2);
+      // < 的话，说明num需要往右找，左边界右移
       if (tails[mid] < num) left = mid + 1;
+      
       else right = mid;
     }
-    
+    // 替换tails，保证tails的递增性，且末尾元素最小
     tails[left] = num;
   }
   
   return tails.length;
 }
+
+// 常规动态规划打法
+var lengthOfLIS = function(nums) { 
+	// 处理边界：空数组直接返回0 
+	if (nums.length === 0) return 0; 
+	// dp数组：dp[i] 表示以nums[i]为**最后一个元素**的最长递增子序列的长度 
+	const dp = new Array(nums.length).fill(1); 
+	// 记录全局最大长度，初始为1（单个元素的子序列长度最小为1） 
+	let maxLen = 1; 
+	// 遍历每个元素，作为子序列的末尾元素 
+	for (let i = 1; i < nums.length; i++) { 
+		// 遍历i之前的所有元素，寻找能接在nums[j]后面的情况 
+		for (let j = 0; j < i; j++) { 
+		// 满足递增：nums[j] < nums[i]，则dp[i]可更新为dp[j]+1 
+			if (nums[j] < nums[i]) { 
+				dp[i] = Math.max(dp[i], dp[j] + 1); 
+			} 
+		} 
+		// 更新全局最长长度 
+		maxLen = Math.max(maxLen, dp[i]); 
+	} 
+	return maxLen; 
+};
 ```
 
 ---
