@@ -14,6 +14,8 @@ export const textAndIndexMap = {
     'ES6': { name: 'ES6', index: 1999 },
     'Vue': { name: 'Vue', index: 1500 },
     'React': { name: 'React', index: 1400 },
+    'NextJS': { name: 'Next.js', index: 1399 },
+    'NuxtJS': { name: 'Nuxt.js', index: 1398 },
     'Typescript': { name: 'Typescript', index: 1333 },
     // 'interview': { name: '面试', index: 1300 },
     'Front-end_Engineering': { name: '前端工程化', index: 999 },

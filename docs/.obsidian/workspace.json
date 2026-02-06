@@ -13,8 +13,8 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "front-end/React/React学习路线.md",
-                "mode": "preview",
+                "file": "front-end/NuxtJS/NuxtJS-11-测试与部署.md",
+                "mode": "source",
                 "source": false,
                 "backlinks": true,
                 "backlinkOpts": {
@@ -28,7 +28,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "React学习路线"
+              "title": "NuxtJS-11-测试与部署"
             }
           },
           {
@@ -128,7 +128,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "front-end/React/React学习路线.md",
+                "file": "front-end/NuxtJS/NuxtJS-11-测试与部署.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -138,7 +138,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "React学习路线 的反向链接列表"
+              "title": "NuxtJS-11-测试与部署 的反向链接列表"
             }
           },
           {
@@ -147,12 +147,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "front-end/React/React学习路线.md",
+                "file": "front-end/NuxtJS/NuxtJS-11-测试与部署.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "React学习路线 的出链列表"
+              "title": "NuxtJS-11-测试与部署 的出链列表"
             }
           },
           {
@@ -190,13 +190,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "front-end/React/React学习路线.md",
+                "file": "front-end/NuxtJS/NuxtJS-11-测试与部署.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "React学习路线 的大纲"
+              "title": "NuxtJS-11-测试与部署 的大纲"
             }
           }
         ],
@@ -220,39 +220,42 @@
   },
   "active": "d027867b0ab4680d",
   "lastOpenFiles": [
-    "front-end/HTML_CSS/HTML_CSS面试题.md",
-    "dataStruct_algo/LeetCode-Hot-100题解.md",
-    "external_ability/nodejs/nodejs笔记.md",
-    "front-end/React/React-01-核心概念.md",
-    "front-end/React/React学习路线.md",
-    "front-end/React/readme.md",
-    "front-end/React/React-17-生态与工具链.md",
-    "front-end/React/React-16-大型应用架构.md",
-    "front-end/React/React-15-服务端渲染.md",
-    "front-end/React/React-14-并发模式.md",
-    "front-end/React/React-13-源码解析.md",
-    "front-end/React/React-12-测试策略.md",
-    "front-end/React/React-11-性能优化.md",
-    "front-end/React/React-10-TypeScript实战.md",
-    "front-end/React/React-09-状态管理.md",
-    "front-end/React/React-08-自定义Hooks.md",
-    "front-end/React/React-07-Hooks进阶.md",
-    "front-end/React/React-06-样式方案.md",
-    "front-end/React/React-05-表单处理.md",
-    "front-end/React/React-04-路由与导航.md",
-    "front-end/React/React-03-组件设计模式.md",
-    "front-end/React/React-02-Hooks基础.md",
-    "fundamental-concept/fetch axios配置.md",
-    "system_develop/best_practices/git相关.md",
-    "system_develop/best_practices/设计系统实践指南.md",
-    "system_develop/best_practices/设计系统-01-Design-Token核心概念与分层哲学.md",
+    "front-end/NuxtJS/NuxtJS-10-模块与Nitro.md",
+    "front-end/NuxtJS/NuxtJS-09-性能与SEO.md",
+    "front-end/NuxtJS/NuxtJS-11-测试与部署.md",
+    "front-end/NuxtJS/NuxtJS-01-项目与目录结构.md",
+    "front-end/NuxtJS/NuxtJS-08-认证与权限.md",
+    "front-end/NuxtJS/NuxtJS-07-服务端API与全栈.md",
+    "front-end/NuxtJS/NuxtJS-06-中间件与布局.md",
+    "front-end/NuxtJS/NuxtJS-05-状态与Composables.md",
+    "front-end/NuxtJS/NuxtJS学习路线.md",
+    "front-end/NuxtJS/NuxtJS-04-数据获取与SSR.md",
+    "front-end/NuxtJS/NuxtJS-03-组件与自动导入.md",
+    "front-end/NuxtJS/NuxtJS-02-文件路由与页面.md",
+    "front-end/NestJS/NestJS-10-GraphQL.md",
+    "front-end/NestJS/NestJS-11-测试与部署.md",
+    "front-end/NestJS/NestJS-09-微服务.md",
+    "front-end/NestJS/NestJS-08-认证与授权.md",
+    "external_ability/uniapp/uniapp入门.md",
+    "front-end/NestJS/NestJS-06-异常过滤与中间件.md",
+    "front-end/NestJS/NestJS-07-配置与数据库.md",
+    "front-end/NestJS/NestJS-02-控制器与路由.md",
+    "front-end/NestJS/NestJS-05-守卫与拦截器.md",
+    "front-end/NestJS/NestJS-04-管道与校验.md",
+    "front-end/NestJS/NestJS-01-项目与模块.md",
+    "front-end/NestJS/NestJS-03-提供者与依赖注入.md",
+    "front-end/NestJS/NestJS学习路线.md",
+    "system_develop/best_practices/设计系统-02-Tailwind-CSS设计哲学与深度定制.md",
+    "external_ability/nestjs",
+    "front-end/NuxtJS",
+    "front-end/NestJS",
+    "front-end/ES6/image-20240911211101495.png",
     "system_develop/best_practices",
     "system_develop",
     "external_ability/wx-miniprogram",
     "external_ability/nodejs",
     "external_ability/uniapp",
     "external_ability",
-    "dataStruct_algo",
-    "未命名.base"
+    "dataStruct_algo"
   ]
 }

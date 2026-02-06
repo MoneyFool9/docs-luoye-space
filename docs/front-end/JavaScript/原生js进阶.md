@@ -10,88 +10,57 @@
 //offsetLeft
 
 function animate (obj, target){
-
 	var timer = setInterval (function () {
-
 		if(obj.offsetLeft >= target){
-
 			clearInterval(timer);
-
 		}
-
 		obj.style.left = obj.offsetLeft +1 + ‘px’;
-
 	},    30);
 
 }
 
 function animate (obj, target){
-
 	obj.timer = setInterval (function () {
-
 		if(obj.offsetLeft >= target){
-
 			clearInterval(obj.timer);
-
 		}
-
 	obj.style.left = obj.offsetLeft +1 + ‘px’;
-
-	},    30);
+	}, 30);
 
 }
 
 //缓动
 
 var step = (target-obj.offsetLeft) / 10;
-
 function animate (obj, target){
-
 	obj.timer = setInterval (function () {
-
 			if(obj.offsetLeft >= target){
-
 				clearInterval(obj.timer);
-
 			}
-
 	obj.style.left = obj.offsetLeft +step+ ‘px’;
-
-	},    30);
+	},  30);
 
 }
 
 var step = Math.ceil((target-obj.offsetLeft) / 10);
-
 var step = (target-obj.offsetLeft) / 10;
-
 step = step > 0 ? Math.ceil(step) : Math.floor (step);
 
 //回调函数
 
 function animate (obj, target, callback){
-
 	obj.timer = setInterval (function () {
-
 			var step = (target-obj.offsetLeft) / 10;
-
 			step = step > 0 ? Math.ceil(step) : Math.floor (step);
-
 			if(obj.offsetLeft >= target){
-
 					clearInterval(obj.timer);
-
 					if(callback) {
-
 							callback();
-
 					}
-
 			}
 
 	obj.style.left = obj.offsetLeft +step+ ‘px’;
-
-	},    30);
+	},  30);
 
 }
 ```
