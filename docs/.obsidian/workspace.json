@@ -13,8 +13,8 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "dataStruct_algo/LeetCode-Hot-100题解.md",
-                "mode": "source",
+                "file": "front-end/React/React学习路线.md",
+                "mode": "preview",
                 "source": false,
                 "backlinks": true,
                 "backlinkOpts": {
@@ -28,7 +28,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "LeetCode-Hot-100题解"
+              "title": "React学习路线"
             }
           },
           {
@@ -128,7 +128,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "dataStruct_algo/LeetCode-Hot-100题解.md",
+                "file": "front-end/React/React学习路线.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -138,7 +138,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "LeetCode-Hot-100题解 的反向链接列表"
+              "title": "React学习路线 的反向链接列表"
             }
           },
           {
@@ -147,12 +147,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "dataStruct_algo/LeetCode-Hot-100题解.md",
+                "file": "front-end/React/React学习路线.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "LeetCode-Hot-100题解 的出链列表"
+              "title": "React学习路线 的出链列表"
             }
           },
           {
@@ -190,13 +190,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "dataStruct_algo/LeetCode-Hot-100题解.md",
+                "file": "front-end/React/React学习路线.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "LeetCode-Hot-100题解 的大纲"
+              "title": "React学习路线 的大纲"
             }
           }
         ],
@@ -220,8 +220,10 @@
   },
   "active": "d027867b0ab4680d",
   "lastOpenFiles": [
-    "front-end/React/React-01-核心概念.md",
+    "front-end/HTML_CSS/HTML_CSS面试题.md",
     "dataStruct_algo/LeetCode-Hot-100题解.md",
+    "external_ability/nodejs/nodejs笔记.md",
+    "front-end/React/React-01-核心概念.md",
     "front-end/React/React学习路线.md",
     "front-end/React/readme.md",
     "front-end/React/React-17-生态与工具链.md",
@@ -244,8 +246,6 @@
     "system_develop/best_practices/git相关.md",
     "system_develop/best_practices/设计系统实践指南.md",
     "system_develop/best_practices/设计系统-01-Design-Token核心概念与分层哲学.md",
-    "fundamental-concept/网络请求学习路径.md",
-    "front-end/JavaScript/ajax网络请求相关.md",
     "system_develop/best_practices",
     "system_develop",
     "external_ability/wx-miniprogram",

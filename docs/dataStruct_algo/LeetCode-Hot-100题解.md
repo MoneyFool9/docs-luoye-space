@@ -2671,22 +2671,50 @@ function wordBreak(s, wordDict) {
 
 ```javascript
 function lengthOfLIS(nums) {
+  // 初始化tails数组，维护不同长度递增子序列的最小末尾元素
   const tails = [];
-  
+  // 遍历原数组的每一个数组
   for (const num of nums) {
+    // 二分查找的左右边界：left从0开始，right初始为tails的长度
+    // 左闭右开区间 [left,right)
     let left = 0, right = tails.length;
-    
+    // 二分查找核心循环：找到第一个>=num的位置left
     while (left < right) {
       const mid = Math.floor((left + right) / 2);
+      // < 的话，说明num需要往右找，左边界右移
       if (tails[mid] < num) left = mid + 1;
+      
       else right = mid;
     }
-    
+    // 替换tails，保证tails的递增性，且末尾元素最小
     tails[left] = num;
   }
   
   return tails.length;
 }
+
+// 常规动态规划打法
+var lengthOfLIS = function(nums) { 
+	// 处理边界：空数组直接返回0 
+	if (nums.length === 0) return 0; 
+	// dp数组：dp[i] 表示以nums[i]为**最后一个元素**的最长递增子序列的长度 
+	const dp = new Array(nums.length).fill(1); 
+	// 记录全局最大长度，初始为1（单个元素的子序列长度最小为1） 
+	let maxLen = 1; 
+	// 遍历每个元素，作为子序列的末尾元素 
+	for (let i = 1; i < nums.length; i++) { 
+		// 遍历i之前的所有元素，寻找能接在nums[j]后面的情况 
+		for (let j = 0; j < i; j++) { 
+		// 满足递增：nums[j] < nums[i]，则dp[i]可更新为dp[j]+1 
+			if (nums[j] < nums[i]) { 
+				dp[i] = Math.max(dp[i], dp[j] + 1); 
+			} 
+		} 
+		// 更新全局最长长度 
+		maxLen = Math.max(maxLen, dp[i]); 
+	} 
+	return maxLen; 
+};
 ```
 
 ---
