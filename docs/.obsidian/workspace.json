@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "front-end/React/React-16-大型应用架构.md",
+                "file": "system_develop/best_practices/微前端-01-背景方案与最佳实践.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -28,7 +28,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "React-16-大型应用架构"
+              "title": "微前端-01-背景方案与最佳实践"
             }
           }
         ]
@@ -164,13 +164,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "front-end/React/React-16-大型应用架构.md",
+                "file": "system_develop/best_practices/微前端-01-背景方案与最佳实践.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "React-16-大型应用架构 的大纲"
+              "title": "微前端-01-背景方案与最佳实践 的大纲"
             }
           }
         ],
@@ -192,8 +192,12 @@
       "terminal:Open terminal": false
     }
   },
-  "active": "d027867b0ab4680d",
+  "active": "f37c7e226c109a8c",
   "lastOpenFiles": [
+    "system_develop/best_practices/assets/微前端-架构示意.svg",
+    "system_develop/best_practices/assets",
+    "front-end/React/React-16-大型应用架构.md",
+    "system_develop/best_practices/微前端-01-背景方案与最佳实践.md",
     "front-end/React/React-17-生态与工具链.md",
     "front-end/NuxtJS/NuxtJS-06-中间件与布局.md",
     "front-end/NuxtJS/NuxtJS-10-模块与Nitro.md",
@@ -217,9 +221,6 @@
     "dataStruct_algo/代码随想录-02-链表.md",
     "dataStruct_algo/代码随想录-01-数组与双指针.md",
     "front-end/Vue/Vue源码笔记.md",
-    "front-end/Vue/Vue3快速上手.md",
-    "front-end/Typescript/TypeScript-02-高级类型与泛型.md",
-    "dataStruct_algo/代码随想录-07-图论.md",
     "front-end/NuxtJS",
     "front-end/NestJS",
     "system_develop/best_practices",
@@ -228,7 +229,6 @@
     "external_ability/nodejs",
     "external_ability/uniapp",
     "external_ability",
-    "dataStruct_algo",
-    "未命名.base"
+    "dataStruct_algo"
   ]
 }
