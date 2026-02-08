@@ -27,6 +27,22 @@ export default withMermaid(
   
   // 忽略死链接检查
   ignoreDeadLinks: true,
+
+  // Vite 构建优化
+  vite: {
+    build: {
+      chunkSizeWarningLimit: 1600,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('mermaid')) {
+              return 'mermaid';
+            }
+          }
+        }
+      }
+    }
+  },
   
   // Mermaid 图表配置
   mermaid: {

@@ -47,7 +47,7 @@ cp .env.example .env
 
 编辑`.env`文件，填入实际的配置信息：
 
-```env
+```ini
 # 前端配置（使用 App Token）
 VITE_DIFY_TOKEN=app-xxxxxxxxxxxxxx
 VITE_DIFY_ENABLED=true
@@ -127,7 +127,7 @@ window.difyConfig = {
 如果需要临时禁用AI助手功能：
 
 **方法1：环境变量**
-```env
+```ini
 VITE_DIFY_ENABLED=false
 ```
 

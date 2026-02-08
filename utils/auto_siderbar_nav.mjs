@@ -75,13 +75,13 @@ function getNav(files, dirPath, entry) {
         })
         // 实际上path1一定是文件夹 这里可以重构
         if (isDirectory(path1)) {
-            const filesChild = fs.readdirSync(path1)
+            const filesChild = fs.readdirSync(path1).filter(file => !NOT_READ.includes(file))
             // filesChild可能是二级文件夹，也可能是单个文件
             filesChild.forEach(child => {
                 const path2 = path.join(path1, child)
                 if (isDirectory(path2)) {
                     // 获得文件在这里
-                    const filesMarkdown = fs.readdirSync(path2)
+                    const filesMarkdown = fs.readdirSync(path2).filter(file => !NOT_READ.includes(file) && file.endsWith('.md'))
                     // 因为filesMarkdown是一坨文件，这里是导航栏，只需要导航到索引零提供访问即可。
                     result[index + 1].items.push({
                         text: textMapFn(textMap, child),
