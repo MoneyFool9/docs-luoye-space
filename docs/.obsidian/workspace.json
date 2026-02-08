@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "dataStruct_algo/LeetCode-Hot-100题解.md",
+                "file": "front-end/React/React-16-大型应用架构.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -28,7 +28,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "LeetCode-Hot-100题解"
+              "title": "React-16-大型应用架构"
             }
           }
         ]
@@ -164,13 +164,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "dataStruct_algo/LeetCode-Hot-100题解.md",
+                "file": "front-end/React/React-16-大型应用架构.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "LeetCode-Hot-100题解 的大纲"
+              "title": "React-16-大型应用架构 的大纲"
             }
           }
         ],
@@ -178,7 +178,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 272.5
+    "width": 261.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -192,36 +192,36 @@
       "terminal:Open terminal": false
     }
   },
-  "active": "f37c7e226c109a8c",
+  "active": "d027867b0ab4680d",
   "lastOpenFiles": [
-    "front-end/NuxtJS/NuxtJS学习路线.md",
-    "front-end/NuxtJS/NuxtJS-11-测试与部署.md",
-    "front-end/NuxtJS/NuxtJS-10-模块与Nitro.md",
-    "front-end/NuxtJS/NuxtJS-09-性能与SEO.md",
-    "front-end/NuxtJS/NuxtJS-08-认证与权限.md",
-    "front-end/NuxtJS/NuxtJS-07-服务端API与全栈.md",
+    "front-end/React/React-17-生态与工具链.md",
     "front-end/NuxtJS/NuxtJS-06-中间件与布局.md",
-    "front-end/NuxtJS/NuxtJS-05-状态与Composables.md",
-    "front-end/NuxtJS/NuxtJS-04-数据获取与SSR.md",
-    "front-end/NuxtJS/NuxtJS-03-组件与自动导入.md",
-    "front-end/NuxtJS/NuxtJS-02-文件路由与页面.md",
-    "front-end/NuxtJS/NuxtJS-01-项目与目录结构.md",
-    "front-end/NuxtJS",
-    "front-end/NestJS/NestJS学习路线.md",
-    "front-end/NestJS/NestJS-11-测试与部署.md",
-    "front-end/NestJS/NestJS-10-GraphQL.md",
-    "front-end/NestJS/NestJS-09-微服务.md",
-    "front-end/NestJS/NestJS-08-认证与授权.md",
-    "front-end/NestJS/NestJS-07-配置与数据库.md",
-    "front-end/NestJS/NestJS-06-异常过滤与中间件.md",
+    "front-end/NuxtJS/NuxtJS-10-模块与Nitro.md",
+    "front-end/NuxtJS/NuxtJS-07-服务端API与全栈.md",
     "front-end/NestJS/NestJS-05-守卫与拦截器.md",
-    "front-end/NestJS/NestJS-04-管道与校验.md",
-    "front-end/NestJS/NestJS-03-提供者与依赖注入.md",
-    "front-end/NestJS/NestJS-02-控制器与路由.md",
-    "front-end/NestJS/NestJS-01-项目与模块.md",
+    "front-end/NestJS/NestJS-09-微服务.md",
+    "front-end/React/React-10-TypeScript实战.md",
+    "front-end/React/React-09-状态管理.md",
+    "front-end/React/React-08-自定义Hooks.md",
+    "front-end/React/React-07-Hooks进阶.md",
+    "front-end/React/React-06-样式方案.md",
+    "front-end/React/React-05-表单处理.md",
+    "front-end/React/React-04-路由与导航.md",
+    "front-end/React/React-03-组件设计模式.md",
+    "front-end/React/React-02-Hooks基础.md",
+    "dataStruct_algo/LeetCode-Hot-100题解.md",
+    "dataStruct_algo/hot100自查清单.md",
+    "dataStruct_algo/代码随想录-04-栈与队列与二叉树.md",
+    "front-end/Vue/Vue编译时笔记.md",
+    "dataStruct_algo/代码随想录-03-哈希与字符串.md",
+    "dataStruct_algo/代码随想录-02-链表.md",
+    "dataStruct_algo/代码随想录-01-数组与双指针.md",
+    "front-end/Vue/Vue源码笔记.md",
+    "front-end/Vue/Vue3快速上手.md",
+    "front-end/Typescript/TypeScript-02-高级类型与泛型.md",
+    "dataStruct_algo/代码随想录-07-图论.md",
+    "front-end/NuxtJS",
     "front-end/NestJS",
-    "front-end/HTML_CSS/HTML_CSS面试题.md",
-    "front-end/ES6/ES6知识点说明.md",
     "system_develop/best_practices",
     "system_develop",
     "external_ability/wx-miniprogram",
