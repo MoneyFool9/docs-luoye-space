@@ -34,7 +34,7 @@ function getSidebarCol(params, path1, pathname) {
     if (isDirectory(dir)) {
       // 是目录，推进递归
       // 获得递归参数，文件夹子文件，路径，路径名
-      const files = fs.readdirSync(dir)
+      const files = fs.readdirSync(dir).filter(file => !NOT_READ.includes(file))
       // 推进
       result.push({
         text: textMapFn(textMap, element),
