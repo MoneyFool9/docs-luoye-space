@@ -1,19 +1,5 @@
-import ts from 'typescript'
-
 function getAsyncFunction() {
   return Object.getPrototypeOf(async function () {}).constructor
-}
-
-async function transpileTs(code) {
-  const output = ts.transpileModule(code, {
-    compilerOptions: {
-      target: ts.ScriptTarget.ES2020,
-      module: ts.ModuleKind.ESNext,
-      strict: false
-    },
-    reportDiagnostics: false
-  })
-  return output.outputText
 }
 
 function toSerializable(value) {
@@ -46,9 +32,7 @@ function createConsoleCollector(logs) {
 async function runCode({ code, lang }) {
   const logs = []
   const startedAt = performance.now()
-  const sourceCode = lang === 'ts' || lang === 'typescript'
-    ? await transpileTs(code)
-    : code
+  const sourceCode = code
 
   const limitedConsole = createConsoleCollector(logs)
   const AsyncFunction = getAsyncFunction()

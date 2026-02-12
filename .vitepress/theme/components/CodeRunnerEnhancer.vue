@@ -15,6 +15,7 @@ const SUPPORTED_LANGUAGES = new Set(['js', 'javascript', 'ts', 'typescript'])
 const resultCache = new Map()
 const route = useRoute()
 let taskId = 0
+let tsCompilerPromise = null
 
 function escapeHtml(text) {
   return String(text)
@@ -130,9 +131,47 @@ function setRunning(buttonEl, panelEl, running) {
   }
 }
 
+async function transpileTypeScript(code) {
+  if (!tsCompilerPromise) {
+    tsCompilerPromise = import('typescript')
+  }
+  const ts = await tsCompilerPromise
+  const output = ts.transpileModule(code, {
+    compilerOptions: {
+      target: ts.ScriptTarget.ES2020,
+      module: ts.ModuleKind.ESNext,
+      strict: false
+    },
+    reportDiagnostics: false
+  })
+  return output.outputText
+}
+
+function buildWorkerErrorMessage(event) {
+  const parts = []
+  if (event?.message) {
+    parts.push(event.message)
+  }
+  if (event?.filename) {
+    parts.push(`${event.filename}:${event.lineno || 0}:${event.colno || 0}`)
+  }
+  const stack = event?.error?.stack || event?.error?.message
+  if (stack) {
+    parts.push(String(stack))
+  }
+  return parts.join(' | ') || 'Worker 运行失败（可能是 Worker 初始化或脚本加载失败）'
+}
+
 function executeInWorker({ code, lang, timeoutMs }) {
   return new Promise((resolve, reject) => {
-    const worker = new Worker(new URL('./codeRunner.worker.js', import.meta.url), { type: 'module' })
+    let worker = null
+    try {
+      worker = new Worker(new URL('./codeRunner.worker.js', import.meta.url), { type: 'module' })
+    } catch (error) {
+      reject(new Error(error instanceof Error ? error.message : 'Worker 初始化失败'))
+      return
+    }
+
     const id = `code-run-${taskId += 1}`
     const timer = setTimeout(() => {
       worker.terminate()
@@ -156,7 +195,14 @@ function executeInWorker({ code, lang, timeoutMs }) {
     worker.onerror = (event) => {
       clearTimeout(timer)
       worker.terminate()
-      reject(new Error(event.message || 'Worker 运行失败'))
+      event.preventDefault?.()
+      reject(new Error(buildWorkerErrorMessage(event)))
+    }
+
+    worker.onmessageerror = () => {
+      clearTimeout(timer)
+      worker.terminate()
+      reject(new Error('Worker 消息反序列化失败'))
     }
 
     worker.postMessage({
@@ -211,7 +257,10 @@ function bindCodeBlock(blockEl) {
 
     setRunning(runButton, panelEl, true)
     try {
-      const output = await executeInWorker({ code, lang, timeoutMs: EXEC_TIMEOUT_MS })
+      const runnableCode = lang === 'ts' || lang === 'typescript'
+        ? await transpileTypeScript(code)
+        : code
+      const output = await executeInWorker({ code: runnableCode, lang: 'javascript', timeoutMs: EXEC_TIMEOUT_MS })
       resultCache.set(cacheKey, output)
       renderOutput(panelEl, output, { duration: output.duration })
     } catch (error) {
