@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "system_develop/best_practices/微前端-01-背景方案与最佳实践.md",
+                "file": "dataStruct_algo/manual/异步与设计模式（12题）.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -28,7 +28,31 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "微前端-01-背景方案与最佳实践"
+              "title": "异步与设计模式（12题）"
+            }
+          },
+          {
+            "id": "80a44cf11dfecc9c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "external_ability/nodejs/nodejs笔记.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "nodejs笔记"
             }
           }
         ]
@@ -88,7 +112,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 244.5
   },
   "right": {
     "id": "440c325439e55124",
@@ -104,6 +128,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "dataStruct_algo/manual/异步与设计模式（12题）.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -113,7 +138,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "反向链接"
+              "title": "异步与设计模式（12题） 的反向链接列表"
             }
           },
           {
@@ -122,11 +147,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "dataStruct_algo/manual/异步与设计模式（12题）.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "出链"
+              "title": "异步与设计模式（12题） 的出链列表"
             }
           },
           {
@@ -164,13 +190,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "system_develop/best_practices/微前端-01-背景方案与最佳实践.md",
+                "file": "dataStruct_algo/manual/异步与设计模式（12题）.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "微前端-01-背景方案与最佳实践 的大纲"
+              "title": "异步与设计模式（12题） 的大纲"
             }
           }
         ],
@@ -178,7 +204,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 261.5
+    "width": 268.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -192,43 +218,45 @@
       "terminal:Open terminal": false
     }
   },
-  "active": "f37c7e226c109a8c",
+  "active": "d027867b0ab4680d",
   "lastOpenFiles": [
+    "external_ability/nodejs/nodejs笔记.md",
+    "system_develop/LCEMonitor-设计与优化方案.md",
+    "dataStruct_algo/manual/异步与设计模式（12题）.md",
+    "dataStruct_algo/manual",
+    "system_develop/前端监控埋点平台-功能与优化头脑风暴.md",
+    "dataStruct_algo/代码随想录-04-栈与队列与二叉树.md",
+    "sorted-array-to-bst-template.py",
+    "system_develop/best_practices/微前端-01-背景方案与最佳实践.md",
+    "front-end/NuxtJS/NuxtJS-11-测试与部署.md",
     "system_develop/best_practices/assets/微前端-架构示意.svg",
     "system_develop/best_practices/assets",
-    "front-end/React/React-16-大型应用架构.md",
-    "system_develop/best_practices/微前端-01-背景方案与最佳实践.md",
-    "front-end/React/React-17-生态与工具链.md",
-    "front-end/NuxtJS/NuxtJS-06-中间件与布局.md",
-    "front-end/NuxtJS/NuxtJS-10-模块与Nitro.md",
-    "front-end/NuxtJS/NuxtJS-07-服务端API与全栈.md",
-    "front-end/NestJS/NestJS-05-守卫与拦截器.md",
-    "front-end/NestJS/NestJS-09-微服务.md",
-    "front-end/React/React-10-TypeScript实战.md",
-    "front-end/React/React-09-状态管理.md",
-    "front-end/React/React-08-自定义Hooks.md",
-    "front-end/React/React-07-Hooks进阶.md",
-    "front-end/React/React-06-样式方案.md",
-    "front-end/React/React-05-表单处理.md",
-    "front-end/React/React-04-路由与导航.md",
-    "front-end/React/React-03-组件设计模式.md",
-    "front-end/React/React-02-Hooks基础.md",
-    "dataStruct_algo/LeetCode-Hot-100题解.md",
-    "dataStruct_algo/hot100自查清单.md",
-    "dataStruct_algo/代码随想录-04-栈与队列与二叉树.md",
     "front-end/Vue/Vue编译时笔记.md",
-    "dataStruct_algo/代码随想录-03-哈希与字符串.md",
-    "dataStruct_algo/代码随想录-02-链表.md",
-    "dataStruct_algo/代码随想录-01-数组与双指针.md",
-    "front-end/Vue/Vue源码笔记.md",
+    "front-end/Typescript/TypeScript-04-工程化配置与最佳实践.md",
+    "front-end/Typescript/TypeScript-03-类型体操与工具类型.md",
+    "front-end/Typescript/TypeScript-02-高级类型与泛型.md",
+    "front-end/Typescript/TypeScript-01-类型系统基础.md",
+    "dataStruct_algo/代码随想录-09-位运算与数学技巧.md",
+    "dataStruct_algo/代码随想录-08-堆与优先队列.md",
+    "front-end/NuxtJS/NuxtJS-10-模块与Nitro.md",
+    "front-end/NuxtJS/NuxtJS-09-性能与SEO.md",
+    "front-end/NuxtJS/NuxtJS-01-项目与目录结构.md",
+    "front-end/NuxtJS/NuxtJS-08-认证与权限.md",
+    "front-end/NuxtJS/NuxtJS-07-服务端API与全栈.md",
+    "front-end/NuxtJS/NuxtJS-06-中间件与布局.md",
+    "front-end/NuxtJS/NuxtJS-05-状态与Composables.md",
+    "front-end/NuxtJS/NuxtJS学习路线.md",
+    "front-end/NuxtJS/NuxtJS-04-数据获取与SSR.md",
+    "front-end/NuxtJS/NuxtJS-03-组件与自动导入.md",
+    "front-end/NuxtJS/NuxtJS-02-文件路由与页面.md",
+    "front-end/NestJS/NestJS-10-GraphQL.md",
+    "external_ability/nestjs",
     "front-end/NuxtJS",
     "front-end/NestJS",
+    "front-end/ES6/image-20240911211101495.png",
     "system_develop/best_practices",
     "system_develop",
     "external_ability/wx-miniprogram",
-    "external_ability/nodejs",
-    "external_ability/uniapp",
-    "external_ability",
-    "dataStruct_algo"
+    "external_ability/nodejs"
   ]
 }

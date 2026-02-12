@@ -9,6 +9,7 @@ import DifyChat from './components/DifyChat.vue'
 import ImageViewer from './components/ImageViewer.vue'
 import NavigationButtons from './components/NavigationButtons.vue'
 import HeroProfile from './components/HeroProfile.vue'
+import CodeRunnerEnhancer from './components/CodeRunnerEnhancer.vue'
 
 /** @type {import('vitepress').Theme} */
 export default {
@@ -20,7 +21,7 @@ export default {
       // 在导航栏添加AI助手按钮
       'nav-bar-content-after': () => h(DifyChat),
       // 添加图片查看器（包含Mermaid支持）和导航按钮
-      'layout-bottom': () => [h(ImageViewer), h(NavigationButtons)]
+      'layout-bottom': () => [h(ImageViewer), h(NavigationButtons), h(CodeRunnerEnhancer)]
     })
   },
   enhanceApp({ app, router, siteData }) {
@@ -31,5 +32,6 @@ export default {
     app.component('ImageViewer', ImageViewer)
     app.component('NavigationButtons', NavigationButtons)
     app.component('HeroProfile', HeroProfile)
+    app.component('CodeRunnerEnhancer', CodeRunnerEnhancer)
   }
 }

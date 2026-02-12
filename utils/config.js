@@ -31,6 +31,7 @@ export const textAndIndexMap = {
     // dataStruct_algo的子目录
     'algorithm': { name: '算法', index: 1000 },
     'lanqiao': { name: '蓝桥杯', index: 900 },
+    'manual': { name: '手写', index: 800 },
   
    
   
