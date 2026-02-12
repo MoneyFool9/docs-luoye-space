@@ -29,17 +29,94 @@ function createConsoleCollector(logs) {
   return collected
 }
 
-async function runCode({ code, lang }) {
+function createTimerTracker() {
+  const pendingTimeouts = new Set()
+  const pendingIntervals = new Set()
+
+  const trackedSetTimeout = (callback, delay = 0, ...args) => {
+    const id = self.setTimeout(() => {
+      try {
+        callback(...args)
+      } finally {
+        pendingTimeouts.delete(id)
+      }
+    }, delay)
+    pendingTimeouts.add(id)
+    return id
+  }
+
+  const trackedClearTimeout = (id) => {
+    pendingTimeouts.delete(id)
+    self.clearTimeout(id)
+  }
+
+  const trackedSetInterval = (callback, delay = 0, ...args) => {
+    const id = self.setInterval(() => {
+      callback(...args)
+    }, delay)
+    pendingIntervals.add(id)
+    return id
+  }
+
+  const trackedClearInterval = (id) => {
+    pendingIntervals.delete(id)
+    self.clearInterval(id)
+  }
+
+  return {
+    trackedSetTimeout,
+    trackedClearTimeout,
+    trackedSetInterval,
+    trackedClearInterval,
+    getPendingTimeoutCount: () => pendingTimeouts.size,
+    clearIntervals: () => {
+      for (const id of pendingIntervals) {
+        self.clearInterval(id)
+      }
+      pendingIntervals.clear()
+    }
+  }
+}
+
+async function waitForTimersToDrain(getPendingTimeoutCount, maxWaitMs) {
+  const startedAt = performance.now()
+  let idleStartedAt = null
+
+  while (performance.now() - startedAt < maxWaitMs) {
+    await new Promise((resolve) => self.setTimeout(resolve, 20))
+    if (getPendingTimeoutCount() === 0) {
+      if (idleStartedAt === null) {
+        idleStartedAt = performance.now()
+      }
+      if (performance.now() - idleStartedAt >= 40) {
+        return
+      }
+    } else {
+      idleStartedAt = null
+    }
+  }
+}
+
+async function runCode({ code, timeoutMs }) {
   const logs = []
   const startedAt = performance.now()
   const sourceCode = code
 
   const limitedConsole = createConsoleCollector(logs)
+  const timerTracker = createTimerTracker()
   const AsyncFunction = getAsyncFunction()
   const runner = new AsyncFunction(
     'limitedConsole',
+    'limitedSetTimeout',
+    'limitedClearTimeout',
+    'limitedSetInterval',
+    'limitedClearInterval',
     `"use strict";
 const console = limitedConsole;
+const setTimeout = limitedSetTimeout;
+const clearTimeout = limitedClearTimeout;
+const setInterval = limitedSetInterval;
+const clearInterval = limitedClearInterval;
 const window = undefined;
 const document = undefined;
 const localStorage = undefined;
@@ -57,7 +134,20 @@ const Function = undefined;
 ${sourceCode}`
   )
 
-  const value = await Promise.resolve(runner(limitedConsole))
+  const value = await Promise.resolve(
+    runner(
+      limitedConsole,
+      timerTracker.trackedSetTimeout,
+      timerTracker.trackedClearTimeout,
+      timerTracker.trackedSetInterval,
+      timerTracker.trackedClearInterval
+    )
+  )
+
+  const remainWaitMs = Math.max(0, (typeof timeoutMs === 'number' ? timeoutMs : 3000) - 80)
+  await waitForTimersToDrain(timerTracker.getPendingTimeoutCount, remainWaitMs)
+  timerTracker.clearIntervals()
+
   return {
     logs,
     result: toSerializable(value),
@@ -66,9 +156,9 @@ ${sourceCode}`
 }
 
 self.onmessage = async (event) => {
-  const { id, code, lang } = event.data
+  const { id, code, timeoutMs } = event.data
   try {
-    const payload = await runCode({ code, lang })
+    const payload = await runCode({ code, timeoutMs })
     self.postMessage({ id, ok: true, ...payload })
   } catch (error) {
     self.postMessage({
