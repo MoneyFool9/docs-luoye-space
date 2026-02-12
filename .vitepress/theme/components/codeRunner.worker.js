@@ -1,15 +1,10 @@
-let tsCompilerPromise = null
+import ts from 'typescript'
 
 function getAsyncFunction() {
   return Object.getPrototypeOf(async function () {}).constructor
 }
 
 async function transpileTs(code) {
-  if (!tsCompilerPromise) {
-    tsCompilerPromise = import('typescript')
-  }
-
-  const ts = await tsCompilerPromise
   const output = ts.transpileModule(code, {
     compilerOptions: {
       target: ts.ScriptTarget.ES2020,
