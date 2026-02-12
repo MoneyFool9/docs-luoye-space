@@ -70,7 +70,6 @@ const importScripts = undefined;
 const Worker = undefined;
 const SharedWorker = undefined;
 const Function = undefined;
-const eval = undefined;
 ${sourceCode}`
   )
 
