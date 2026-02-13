@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "dataStruct_algo/manual/异步与设计模式（12题）.md",
+                "file": "dataStruct_algo/manual/工具函数（19题）.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -28,7 +28,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "异步与设计模式（12题）"
+              "title": "工具函数（19题）"
             }
           },
           {
@@ -190,13 +190,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "dataStruct_algo/manual/异步与设计模式（12题）.md",
+                "file": "dataStruct_algo/manual/工具函数（19题）.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "异步与设计模式（12题） 的大纲"
+              "title": "工具函数（19题） 的大纲"
             }
           }
         ],
@@ -220,9 +220,11 @@
   },
   "active": "d027867b0ab4680d",
   "lastOpenFiles": [
+    "dataStruct_algo/manual/异步与设计模式（12题）.md",
+    "dataStruct_algo/manual/工具函数（19题）.md",
+    "dataStruct_algo/代码随想录-02-链表.md",
     "external_ability/nodejs/nodejs笔记.md",
     "system_develop/LCEMonitor-设计与优化方案.md",
-    "dataStruct_algo/manual/异步与设计模式（12题）.md",
     "dataStruct_algo/manual",
     "system_develop/前端监控埋点平台-功能与优化头脑风暴.md",
     "dataStruct_algo/代码随想录-04-栈与队列与二叉树.md",
@@ -248,8 +250,6 @@
     "front-end/NuxtJS/NuxtJS学习路线.md",
     "front-end/NuxtJS/NuxtJS-04-数据获取与SSR.md",
     "front-end/NuxtJS/NuxtJS-03-组件与自动导入.md",
-    "front-end/NuxtJS/NuxtJS-02-文件路由与页面.md",
-    "front-end/NestJS/NestJS-10-GraphQL.md",
     "external_ability/nestjs",
     "front-end/NuxtJS",
     "front-end/NestJS",
