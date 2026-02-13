@@ -334,3 +334,110 @@ img.no-preview:hover {
 .dark .vp-doc .wikilink-broken {
   color: var(--vp-c-danger-2);
 }
+
+/**
+ * Component: Code Runner
+ * -------------------------------------------------------------------------- */
+
+.vp-doc div[class*='language-'] {
+  position: relative;
+}
+
+.vp-doc .code-runner-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.vp-doc .code-runner-btn {
+  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-1);
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vp-doc .code-runner-btn:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}
+
+.vp-doc .code-runner-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.vp-doc .code-runner-panel {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg-soft);
+  font-size: 12px;
+}
+
+.vp-doc .code-runner-panel.is-error {
+  border-color: var(--vp-c-danger-1);
+}
+
+.vp-doc .code-runner-meta {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.vp-doc .code-runner-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--vp-c-default-soft);
+  color: var(--vp-c-text-2);
+  font-size: 11px;
+}
+
+.vp-doc .code-runner-badge-error {
+  background: var(--vp-c-danger-soft);
+  color: var(--vp-c-danger-1);
+}
+
+.vp-doc .code-runner-section-title {
+  margin: 6px 0 4px;
+  color: var(--vp-c-text-2);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.vp-doc .code-runner-console,
+.vp-doc .code-runner-result,
+.vp-doc .code-runner-error,
+.vp-doc .code-runner-hint,
+.vp-doc .code-runner-loading {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.vp-doc .code-runner-console {
+  max-height: 240px;
+  overflow: auto;
+}
+
+.vp-doc .code-runner-line {
+  margin: 2px 0;
+}
+
+.vp-doc .code-runner-line-warn {
+  color: var(--vp-c-warning-1);
+}
+
+.vp-doc .code-runner-line-error {
+  color: var(--vp-c-danger-1);
+}
+
+.vp-doc .code-runner-result {
+  color: var(--vp-c-brand-1);
+}
