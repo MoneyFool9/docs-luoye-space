@@ -52,6 +52,9 @@ export default withMermaid(
   
   // Markdown 配置
   markdown: {
+    headers: {
+      level: [1, 2, 3, 4, 5, 6]
+    },
     config: (md) => {
       // 自动转义markdown中的双大括号（避免与Vue插值冲突）
       md.core.ruler.before('normalize', 'escape-curly-braces', (state) => {
@@ -81,7 +84,7 @@ export default withMermaid(
     },
     
     outlineTitle: "文章目录",
-    outline: [2, 6],
+    outline: [1, 6],
     logo: "logo.svg", // 配置logo位置，public目录
      // 文章翻页
      docFooter: {
