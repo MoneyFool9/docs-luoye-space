@@ -16,7 +16,7 @@
       <div class="profile-main">
         <div class="avatar-wrapper">
           <div class="avatar-hexagon">
-            <img src="/person.jpg" alt="钱嘉豪" class="avatar-img" />
+            <img src="https://ly57-pics-bed.oss-cn-guangzhou.aliyuncs.com/img/person.jpg" alt="钱嘉豪" class="avatar-img" />
           </div>
           <div class="status-indicator">
             <span class="status-dot"></span>
