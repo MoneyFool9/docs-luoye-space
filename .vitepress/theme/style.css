@@ -194,7 +194,65 @@
 }
 
 /* 桌面端侧边栏收起 */
+.sidebar-toggle-btn {
+  display: none;
+}
+
 @media (min-width: 960px) {
+  /* 左侧侧边栏滚动条极简化：默认接近不可见 */
+  #VPSidebarNav {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  #VPSidebarNav::-webkit-scrollbar {
+    width: 2px;
+  }
+
+  #VPSidebarNav::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 999px;
+    opacity: 0;
+  }
+
+  .VPSidebar:hover #VPSidebarNav {
+    scrollbar-color: rgba(148, 163, 184, 0.28) transparent;
+  }
+
+  .VPSidebar:hover #VPSidebarNav::-webkit-scrollbar-thumb,
+  #VPSidebarNav:active::-webkit-scrollbar-thumb,
+  #VPSidebarNav:focus-within::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.28);
+    opacity: 1;
+  }
+
+  /* 右侧小圆按钮：贴近侧边栏滚动条区域 */
+  .VPSidebar .sidebar-toggle-btn {
+    position: fixed;
+    top: calc(var(--vp-nav-height) + 16px);
+    left: calc(var(--vp-sidebar-width) - 9px);
+    z-index: 31;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: 999px;
+    background: var(--vp-c-bg-soft);
+    color: var(--vp-c-text-2);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    transition: all 0.2s ease;
+  }
+
+  .VPSidebar .sidebar-toggle-btn:hover {
+    border-color: var(--vp-c-brand-1);
+    color: var(--vp-c-brand-1);
+    transform: scale(1.05);
+  }
+
   .vp-sidebar-collapsed {
     --vp-sidebar-width: 56px;
   }
@@ -211,15 +269,6 @@
   .vp-sidebar-collapsed #VPSidebarNav .text,
   .vp-sidebar-collapsed #VPSidebarNav .caret {
     display: none !important;
-  }
-
-  .vp-sidebar-collapsed .sidebar-toggle-btn {
-    padding: 6px;
-    gap: 0;
-  }
-
-  .vp-sidebar-collapsed .sidebar-toggle-label {
-    display: none;
   }
 
   .vp-sidebar-collapsed .VPDoc.has-sidebar .content {
