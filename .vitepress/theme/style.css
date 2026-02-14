@@ -264,11 +264,17 @@
     transition: width 0.2s ease;
   }
 
-  .vp-sidebar-collapsed #VPSidebarNav .group,
   .vp-sidebar-collapsed #VPSidebarNav .title,
   .vp-sidebar-collapsed #VPSidebarNav .text,
-  .vp-sidebar-collapsed #VPSidebarNav .caret {
+  .vp-sidebar-collapsed #VPSidebarNav .caret,
+  .vp-sidebar-collapsed #VPSidebarNav .items,
+  .vp-sidebar-collapsed #VPSidebarNav .link {
     display: none !important;
+  }
+
+  /* 确保收起状态下切换按钮始终可见 */
+  .vp-sidebar-collapsed .VPSidebar .sidebar-toggle-btn {
+    display: inline-flex !important;
   }
 
   .vp-sidebar-collapsed .VPDoc.has-sidebar .content {
