@@ -193,6 +193,46 @@
   scrollbar-width: none;
 }
 
+/* 桌面端侧边栏收起 */
+@media (min-width: 960px) {
+  .vp-sidebar-collapsed {
+    --vp-sidebar-width: 56px;
+  }
+
+  .vp-sidebar-collapsed .VPSidebar {
+    width: var(--vp-sidebar-width) !important;
+    padding-left: 8px;
+    padding-right: 8px;
+    transition: width 0.2s ease;
+  }
+
+  .vp-sidebar-collapsed #VPSidebarNav .group,
+  .vp-sidebar-collapsed #VPSidebarNav .title,
+  .vp-sidebar-collapsed #VPSidebarNav .text,
+  .vp-sidebar-collapsed #VPSidebarNav .caret {
+    display: none !important;
+  }
+
+  .vp-sidebar-collapsed .sidebar-toggle-btn {
+    padding: 6px;
+    gap: 0;
+  }
+
+  .vp-sidebar-collapsed .sidebar-toggle-label {
+    display: none;
+  }
+
+  .vp-sidebar-collapsed .VPDoc.has-sidebar .content {
+    max-width: 1552px !important;
+  }
+
+  .vp-sidebar-collapsed .VPDoc.has-sidebar .container {
+    display: flex;
+    justify-content: center;
+    max-width: 1562px !important;
+  }
+}
+
 /* 自定义h2的间距 */
 .vp-doc h2 {
   margin: 0px 0 16px;
