@@ -54,12 +54,10 @@ const LayoutWithSidebarToggle = defineComponent({
           h(DefaultTheme.Layout, null, {
             // 在文档内容顶部插入阅读时长组件
             'doc-before': () => h(ReadingTime),
-            // 在导航栏添加AI助手按钮
-            'nav-bar-content-after': () => h(DifyChat),
             // 在左侧导航顶部添加侧边栏收起按钮
             'sidebar-nav-before': () => h(SidebarToggle),
             // 添加图片查看器（包含Mermaid支持）和导航按钮
-            'layout-bottom': () => [h(ImageViewer), h(NavigationButtons), h(CodeRunnerEnhancer)]
+            'layout-bottom': () => [h(DifyChat), h(ImageViewer), h(NavigationButtons), h(CodeRunnerEnhancer)]
           })
         ]
       )

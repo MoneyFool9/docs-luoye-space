@@ -99,7 +99,7 @@ npm run sync:dify
 npm run docs:dev
 ```
 
-访问 http://localhost:5173，应该能在导航栏看到"AI助手"按钮。
+访问 http://localhost:5173，默认会在右下角看到"AI助手"悬浮按钮。
 
 ## 🎨 自定义配置
 
@@ -109,6 +109,9 @@ npm run docs:dev
 
 ```javascript
 window.difyConfig = {
+  uiSettings: {
+    position: 'float', // 推荐：右下角悬浮入口；可选 navbar
+  },
   chatSettings: {
     botName: '你的AI助手名称',
     welcomeMessage: '自定义欢迎消息',
@@ -121,6 +124,12 @@ window.difyConfig = {
   }
 }
 ```
+
+### 会话缓存策略
+
+- AI 助手会将聊天记录保存到浏览器本地。
+- 聊天记录默认保留 7 天，超过 7 天会自动清除。
+- 可通过对话框右上角“清除会话”按钮手动清空。
 
 ### 禁用AI助手
 

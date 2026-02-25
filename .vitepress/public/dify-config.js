@@ -27,7 +27,7 @@ window.difyConfig = {
   
   // UI配置
   uiSettings: {
-    position: 'navbar', // 位置：navbar（导航栏）或 float（浮动按钮）
+    position: 'float', // 位置：navbar（导航栏）或 float（浮动按钮）
     buttonText: 'AI助手',
     
     // 对话框尺寸

@@ -160,7 +160,7 @@
   --docsearch-primary-color: var(--vp-c-brand-1) !important;
 }
 
-/* 自定义侧边栏在最左边，右边撑满宽度
+/* 自定义侧边栏在最左边，右边撑满宽度 */
 .VPDoc .container {
   margin: 0 !important;
 }
@@ -254,27 +254,30 @@
   }
 
   .vp-sidebar-collapsed {
-    --vp-sidebar-width: 56px;
+    --vp-sidebar-width: 0px;
   }
 
   .vp-sidebar-collapsed .VPSidebar {
-    width: var(--vp-sidebar-width) !important;
-    padding-left: 8px;
-    padding-right: 8px;
+    width: 0 !important;
+    padding: 0 !important;
+    border-right: none !important;
+    overflow: visible;
     transition: width 0.2s ease;
   }
 
-  .vp-sidebar-collapsed #VPSidebarNav .title,
-  .vp-sidebar-collapsed #VPSidebarNav .text,
-  .vp-sidebar-collapsed #VPSidebarNav .caret,
-  .vp-sidebar-collapsed #VPSidebarNav .items,
-  .vp-sidebar-collapsed #VPSidebarNav .link {
+  .vp-sidebar-collapsed #VPSidebarNav {
     display: none !important;
   }
 
-  /* 确保收起状态下切换按钮始终可见 */
+  /* 收起后按钮靠左固定，保证可见并可展开 */
   .vp-sidebar-collapsed .VPSidebar .sidebar-toggle-btn {
+    left: 8px;
     display: inline-flex !important;
+  }
+
+  .vp-sidebar-collapsed .VPNavBar.has-sidebar .content,
+  .vp-sidebar-collapsed .VPContent.has-sidebar {
+    padding-left: 0 !important;
   }
 
   .vp-sidebar-collapsed .VPDoc.has-sidebar .content {

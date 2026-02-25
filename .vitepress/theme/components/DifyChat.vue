@@ -1,10 +1,10 @@
 <template>
-  <div class="dify-chat-wrapper" v-if="isEnabled">
+  <div :class="['dify-chat-wrapper', `is-${positionMode}`]" v-if="isEnabled">
     <!-- AI助手按钮 -->
-    <button 
-      class="dify-chat-button" 
+    <button
+      :class="['dify-chat-button', { floating: positionMode === 'float' }]"
       @click="toggleChat"
-      :title="config.chatSettings.buttonText || 'AI助手'"
+      :title="config.uiSettings?.buttonText || 'AI助手'"
     >
       <svg class="dify-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -16,9 +16,17 @@
     
     <!-- 对话框 -->
     <Transition name="fade-slide">
-      <div v-if="isOpen" :class="['dify-chat-dialog', { fullscreen: isFullscreen }]" @click.stop>
+      <div
+        v-if="isOpen"
+        :class="['dify-chat-dialog', { fullscreen: isFullscreen, dragging: isDragging }]"
+        :style="dialogStyle"
+        @click.stop
+      >
         <!-- 对话框头部 -->
-        <div class="dify-chat-header">
+        <div
+          class="dify-chat-header"
+          @mousedown="startDrag"
+        >
           <div class="header-left">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
@@ -29,7 +37,7 @@
             <span class="header-title">{{ config.chatSettings?.botName || 'AI助手' }}</span>
           </div>
           <div class="header-right">
-            <button class="fullscreen-button" @click="toggleFullscreen" :title="isFullscreen ? '退出全屏' : '全屏'">
+            <button class="fullscreen-button" @mousedown.stop @click="toggleFullscreen" :title="isFullscreen ? '退出全屏' : '全屏'">
               <!-- 全屏图标 -->
               <svg v-if="!isFullscreen" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -39,12 +47,12 @@
                 <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </button>
-            <button class="clear-button" @click="clearConversation" title="清除会话" v-if="messages.length > 0">
+            <button class="clear-button" @mousedown.stop @click="clearConversation" title="清除会话" v-if="messages.length > 0">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </button>
-            <button class="close-button" @click="toggleChat" title="关闭">
+            <button class="close-button" @mousedown.stop @click="toggleChat" title="关闭">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
@@ -181,7 +189,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
 
 const isEnabled = ref(false)
 const isOpen = ref(false)
@@ -192,6 +200,9 @@ const isLoading = ref(false)
 const error = ref('')
 const messagesContainer = ref(null)
 const inputArea = ref(null)
+const isDragging = ref(false)
+const dialogPosition = ref({ left: 0, top: 0 })
+const hasCustomPosition = ref(false)
 const config = ref({
   chatSettings: {},
   uiSettings: {}
@@ -203,6 +214,30 @@ const conversationId = ref('')
 const STORAGE_KEY = 'dify-chat-history'
 const CONVERSATION_KEY = 'dify-conversation-id'
 const USER_ID_KEY = 'dify-user-id'
+const STORAGE_META_KEY = 'dify-chat-meta'
+const CHAT_EXPIRE_DAYS = 7
+
+const positionMode = computed(() => config.value.uiSettings?.position || 'float')
+
+const dialogStyle = computed(() => {
+  const dialog = config.value.uiSettings?.dialog || {}
+  const style = {
+    width: dialog.width ? `${dialog.width}px` : undefined,
+    height: dialog.height ? `${dialog.height}px` : undefined,
+    maxWidth: dialog.maxWidth,
+    maxHeight: dialog.maxHeight
+  }
+
+  if (!isFullscreen.value && hasCustomPosition.value) {
+    style.left = `${dialogPosition.value.left}px`
+    style.top = `${dialogPosition.value.top}px`
+    style.right = 'auto'
+  }
+
+  return style
+})
+
+const getExpireMs = () => CHAT_EXPIRE_DAYS * 24 * 60 * 60 * 1000
 
 // 获取或生成用户ID
 const getUserId = () => {
@@ -231,6 +266,7 @@ const saveConversation = () => {
       time: msg.time
     }))
     localStorage.setItem(STORAGE_KEY, JSON.stringify(messagesToSave))
+    localStorage.setItem(STORAGE_META_KEY, JSON.stringify({ savedAt: Date.now() }))
     
     // 保存会话ID
     if (conversationId.value) {
@@ -246,9 +282,22 @@ const loadConversation = () => {
   if (typeof window === 'undefined') return
   
   try {
+    const metaRaw = localStorage.getItem(STORAGE_META_KEY)
+    if (metaRaw) {
+      const meta = JSON.parse(metaRaw)
+      const savedAt = Number(meta?.savedAt || 0)
+      if (!savedAt || Date.now() - savedAt > getExpireMs()) {
+        clearConversation()
+        return
+      }
+    }
+
     // 恢复消息列表
     const savedMessages = localStorage.getItem(STORAGE_KEY)
     if (savedMessages) {
+      if (!metaRaw) {
+        localStorage.setItem(STORAGE_META_KEY, JSON.stringify({ savedAt: Date.now() }))
+      }
       const parsed = JSON.parse(savedMessages)
       messages.value = parsed.map(msg => ({
         ...msg,
@@ -276,12 +325,83 @@ const clearConversation = () => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(STORAGE_KEY)
     localStorage.removeItem(CONVERSATION_KEY)
+    localStorage.removeItem(STORAGE_META_KEY)
   }
 }
 
 // 切换全屏
 const toggleFullscreen = () => {
   isFullscreen.value = !isFullscreen.value
+  if (isFullscreen.value) {
+    hasCustomPosition.value = false
+  }
+}
+
+const getDialogRect = () => {
+  const dialog = config.value.uiSettings?.dialog || {}
+  const width = Number(dialog.width || 600)
+  const height = Number(dialog.height || 500)
+  return { width, height }
+}
+
+const clampDialogPosition = (left, top) => {
+  if (typeof window === 'undefined') return { left, top }
+  const { width, height } = getDialogRect()
+  const maxLeft = Math.max(0, window.innerWidth - width)
+  const maxTop = Math.max(0, window.innerHeight - height)
+  return {
+    left: Math.min(Math.max(0, left), maxLeft),
+    top: Math.min(Math.max(0, top), maxTop)
+  }
+}
+
+const initDialogPosition = () => {
+  if (typeof window === 'undefined') return
+  const { width } = getDialogRect()
+  const defaultLeft = Math.max(12, window.innerWidth - width - 12)
+  const defaultTop = 12 + 64
+  dialogPosition.value = clampDialogPosition(defaultLeft, defaultTop)
+}
+
+const dragState = {
+  startX: 0,
+  startY: 0,
+  startLeft: 0,
+  startTop: 0
+}
+
+const stopDrag = () => {
+  isDragging.value = false
+  if (typeof window === 'undefined') return
+  window.removeEventListener('mousemove', onDrag)
+  window.removeEventListener('mouseup', stopDrag)
+}
+
+const onDrag = (event) => {
+  if (!isDragging.value || isFullscreen.value) return
+  const left = dragState.startLeft + (event.clientX - dragState.startX)
+  const top = dragState.startTop + (event.clientY - dragState.startY)
+  dialogPosition.value = clampDialogPosition(left, top)
+}
+
+const startDrag = (event) => {
+  if (positionMode.value !== 'float' || isFullscreen.value) return
+  if (event.button !== 0) return
+
+  dragState.startX = event.clientX
+  dragState.startY = event.clientY
+  dragState.startLeft = dialogPosition.value.left
+  dragState.startTop = dialogPosition.value.top
+  isDragging.value = true
+  hasCustomPosition.value = true
+
+  window.addEventListener('mousemove', onDrag)
+  window.addEventListener('mouseup', stopDrag)
+}
+
+const handleResize = () => {
+  if (isFullscreen.value || !hasCustomPosition.value) return
+  dialogPosition.value = clampDialogPosition(dialogPosition.value.left, dialogPosition.value.top)
 }
 
 // 初始化配置
@@ -306,7 +426,16 @@ onMounted(() => {
     
     // 加载保存的会话
     loadConversation()
+    initDialogPosition()
+    window.addEventListener('resize', handleResize)
   }
+})
+
+onBeforeUnmount(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', handleResize)
+  }
+  stopDrag()
 })
 
 // 切换对话框
@@ -315,6 +444,9 @@ const toggleChat = () => {
   error.value = ''
   
   if (isOpen.value) {
+    if (!hasCustomPosition.value) {
+      initDialogPosition()
+    }
     nextTick(() => {
       inputArea.value?.focus()
     })
@@ -669,6 +801,10 @@ const navigateToReference = (ref) => {
   position: relative;
 }
 
+.dify-chat-wrapper.is-float {
+  position: static;
+}
+
 /* 按钮样式 */
 .dify-chat-button {
   display: flex;
@@ -685,9 +821,30 @@ const navigateToReference = (ref) => {
   transition: all 0.25s;
 }
 
+.dify-chat-button.floating {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(62, 175, 124, 0.32);
+  z-index: 60;
+}
+
 .dify-chat-button:hover {
   border-color: var(--vp-c-brand-1);
   color: var(--vp-c-brand-1);
+}
+
+.dify-chat-button.floating:hover {
+  transform: translateY(-1px);
+  color: #fff;
+  background: var(--vp-c-brand-2);
+  border-color: var(--vp-c-brand-2);
 }
 
 .dify-icon {
@@ -716,6 +873,11 @@ const navigateToReference = (ref) => {
   z-index: 100;
   overflow: hidden;
   transition: all 0.3s ease;
+}
+
+.dify-chat-dialog.dragging {
+  transition: none;
+  user-select: none;
 }
 
 /* 全屏模式 */
@@ -758,6 +920,7 @@ const navigateToReference = (ref) => {
   padding: 16px;
   border-bottom: 1px solid var(--vp-c-divider);
   flex-shrink: 0;
+  cursor: move;
 }
 
 .header-left {
@@ -1271,6 +1434,15 @@ const navigateToReference = (ref) => {
     right: 12px;
     width: auto;
     height: calc(100vh - var(--vp-nav-height) - 24px);
+  }
+
+  .dify-chat-header {
+    cursor: default;
+  }
+
+  .dify-chat-button.floating {
+    right: 16px;
+    bottom: 16px;
   }
 }
 
