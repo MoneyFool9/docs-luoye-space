@@ -226,8 +226,8 @@
     opacity: 1;
   }
 
-  /* 右侧小圆按钮：贴近侧边栏滚动条区域 */
-  .VPSidebar .sidebar-toggle-btn {
+  /* 侧边栏切换按钮：桌面端固定显示，避免收起后丢失 */
+  .sidebar-toggle-btn {
     position: fixed;
     top: calc(var(--vp-nav-height) + 16px);
     left: calc(var(--vp-sidebar-width) - 9px);
@@ -247,37 +247,34 @@
     transition: all 0.2s ease;
   }
 
-  .VPSidebar .sidebar-toggle-btn:hover {
+  .sidebar-toggle-btn:hover {
     border-color: var(--vp-c-brand-1);
     color: var(--vp-c-brand-1);
     transform: scale(1.05);
   }
 
   .vp-sidebar-collapsed {
-    --vp-sidebar-width: 0px;
+    --vp-sidebar-width: 56px;
   }
 
   .vp-sidebar-collapsed .VPSidebar {
-    width: 0 !important;
-    padding: 0 !important;
-    border-right: none !important;
-    overflow: visible;
+    width: var(--vp-sidebar-width) !important;
+    padding-left: 8px;
+    padding-right: 8px;
     transition: width 0.2s ease;
   }
 
-  .vp-sidebar-collapsed #VPSidebarNav {
-    display: none !important;
-  }
-
   /* 收起后按钮靠左固定，保证可见并可展开 */
-  .vp-sidebar-collapsed .VPSidebar .sidebar-toggle-btn {
+  .vp-sidebar-collapsed .sidebar-toggle-btn {
     left: 8px;
     display: inline-flex !important;
   }
 
-  .vp-sidebar-collapsed .VPNavBar.has-sidebar .content,
-  .vp-sidebar-collapsed .VPContent.has-sidebar {
-    padding-left: 0 !important;
+  .vp-sidebar-collapsed #VPSidebarNav .title,
+  .vp-sidebar-collapsed #VPSidebarNav .text,
+  .vp-sidebar-collapsed #VPSidebarNav .caret,
+  .vp-sidebar-collapsed #VPSidebarNav .items {
+    display: none !important;
   }
 
   .vp-sidebar-collapsed .VPDoc.has-sidebar .content {

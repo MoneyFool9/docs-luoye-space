@@ -299,7 +299,14 @@ onUnmounted(() => {
 /* 确保按钮不会遮挡 Dify 聊天按钮 */
 @media (min-width: 769px) {
   .navigation-buttons {
-    bottom: 24px;
+    bottom: 92px;
+  }
+}
+
+/* 浮动聊天按钮启用时，进一步提升层级间距 */
+@media (max-width: 768px) {
+  .navigation-buttons {
+    bottom: 84px;
   }
 }
 
