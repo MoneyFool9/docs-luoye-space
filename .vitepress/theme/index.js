@@ -54,10 +54,8 @@ const LayoutWithSidebarToggle = defineComponent({
           h(DefaultTheme.Layout, null, {
             // 在文档内容顶部插入阅读时长组件
             'doc-before': () => h(ReadingTime),
-            // 在左侧导航顶部添加侧边栏收起按钮
-            'sidebar-nav-before': () => h(SidebarToggle),
-            // 添加图片查看器（包含Mermaid支持）和导航按钮
-            'layout-bottom': () => [h(DifyChat), h(ImageViewer), h(NavigationButtons), h(CodeRunnerEnhancer)]
+            // 添加图片查看器、导航按钮、AI助手、侧边栏切换（全部挂在全局层，不受侧边栏overflow裁剪）
+            'layout-bottom': () => [h(SidebarToggle), h(DifyChat), h(ImageViewer), h(NavigationButtons), h(CodeRunnerEnhancer)]
           })
         ]
       )

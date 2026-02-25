@@ -231,7 +231,8 @@
     position: fixed;
     top: calc(var(--vp-nav-height) + 16px);
     left: calc(var(--vp-sidebar-width) - 9px);
-    z-index: 31;
+    right: auto;
+    z-index: 120;
     width: 18px;
     height: 18px;
     display: inline-flex;
@@ -253,39 +254,45 @@
     transform: scale(1.05);
   }
 
-  .vp-sidebar-collapsed {
-    --vp-sidebar-width: 56px;
+  .VPSidebar {
+    transition: left 0.2s ease;
   }
 
   .vp-sidebar-collapsed .VPSidebar {
-    width: var(--vp-sidebar-width) !important;
-    padding-left: 8px;
-    padding-right: 8px;
-    transition: width 0.2s ease;
+    left: calc(-1 * var(--vp-sidebar-width));
+    transform: none !important;
   }
 
-  /* 收起后按钮靠左固定，保证可见并可展开 */
+  /* 收起后按钮固定在左侧边缘，始终可见 */
   .vp-sidebar-collapsed .sidebar-toggle-btn {
-    left: 8px;
+    left: 12px;
+    right: auto;
     display: inline-flex !important;
   }
 
-  .vp-sidebar-collapsed #VPSidebarNav .title,
-  .vp-sidebar-collapsed #VPSidebarNav .text,
-  .vp-sidebar-collapsed #VPSidebarNav .caret,
-  .vp-sidebar-collapsed #VPSidebarNav .items {
-    display: none !important;
+  /* 收起后释放左侧占位，避免顶部标题和搜索栏挤压 */
+  .vp-sidebar-collapsed .VPNavBar.has-sidebar .content,
+  .vp-sidebar-collapsed .VPContent.has-sidebar,
+  .vp-sidebar-collapsed .VPLocalNav {
+    padding-left: 0 !important;
   }
 
-  .vp-sidebar-collapsed .VPDoc.has-sidebar .content {
-    max-width: 1552px !important;
+  .vp-sidebar-collapsed .VPNavBarSearch {
+    margin-left: 224px !important;
   }
 
-  .vp-sidebar-collapsed .VPDoc.has-sidebar .container {
-    display: flex;
-    justify-content: center;
-    max-width: 1562px !important;
+  .vp-sidebar-collapsed .VPNavBarTitle.has-sidebar,
+  .vp-sidebar-collapsed .VPNavBarTitle.has-sidebar .title {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 0 1 auto !important;
+    overflow: visible !important;
   }
+}
+
+/* 确保顶部导航栏始终有背景层 */
+.VPNavBar {
+  background-color: var(--vp-c-bg) !important;
 }
 
 /* 自定义h2的间距 */
