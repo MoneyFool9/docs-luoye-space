@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "skills": {
+    "shopify-developer": {
+      "name": "shopify-developer",
+      "source": "local",
+      "contentHash": "1732419cd1dfc1096790931db29f5bd665d54d27f9ebb80238cb8abb92ab986a",
+      "installedAt": "2026-02-25T10:16:14.617Z",
+      "updatedAt": "2026-02-25T10:16:14.617Z",
+      "agents": [
+        "cursor"
+      ],
+      "method": "copy",
+      "global": false
+    }
+  }
+}

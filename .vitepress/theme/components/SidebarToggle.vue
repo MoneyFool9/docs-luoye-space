@@ -1,5 +1,6 @@
 <template>
   <button
+    v-if="hasSidebar"
     class="sidebar-toggle-btn"
     type="button"
     :aria-expanded="String(!isCollapsed)"
@@ -13,6 +14,15 @@
 
 <script setup>
 import { computed, inject } from 'vue'
+import { useData } from 'vitepress'
+
+const { page, frontmatter } = useData()
+
+const hasSidebar = computed(() => {
+  if (frontmatter.value?.layout === 'home') return false
+  if (frontmatter.value?.sidebar === false) return false
+  return !!page.value?.relativePath
+})
 
 const sidebarState = inject('vp-sidebar-collapse', null)
 

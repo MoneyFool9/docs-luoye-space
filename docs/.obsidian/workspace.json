@@ -11,24 +11,10 @@
             "id": "d027867b0ab4680d",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "dataStruct_algo/manual/工具函数（19题）.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "工具函数（19题）"
+              "title": "新标签页"
             }
           }
         ]
@@ -164,13 +150,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "dataStruct_algo/manual/工具函数（19题）.md",
+                "file": "implement_docs_serverless_cf_workers.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "工具函数（19题） 的大纲"
+              "title": "implement_docs_serverless_cf_workers 的大纲"
             }
           }
         ],
@@ -192,13 +178,17 @@
       "terminal:Open terminal": false
     }
   },
-  "active": "d027867b0ab4680d",
+  "active": "f37c7e226c109a8c",
   "lastOpenFiles": [
+    "implement_docs.md",
+    "implement_docs_serverless_cf_workers.md",
+    "implement_docs_v2_route_b.md",
+    "development-plan.md",
+    "dataStruct_algo/manual/工具函数（19题）.md",
     "system_develop/best_practices/微前端-01-背景方案与最佳实践.md",
     "system_develop/前端监控埋点平台-功能与优化头脑风暴.md",
     "system_develop/LCEMonitor-设计与优化方案.md",
     "dataStruct_algo/manual/异步与设计模式（12题）.md",
-    "dataStruct_algo/manual/工具函数（19题）.md",
     "dataStruct_algo/manual",
     "system_develop/best_practices/assets/微前端-架构示意.svg",
     "system_develop/best_practices/assets",
@@ -219,10 +209,6 @@
     "front-end/React/React-03-组件设计模式.md",
     "front-end/React/React-02-Hooks基础.md",
     "dataStruct_algo/LeetCode-Hot-100题解.md",
-    "dataStruct_algo/hot100自查清单.md",
-    "dataStruct_algo/代码随想录-04-栈与队列与二叉树.md",
-    "front-end/Vue/Vue编译时笔记.md",
-    "dataStruct_algo/代码随想录-03-哈希与字符串.md",
     "front-end/NuxtJS",
     "front-end/NestJS",
     "system_develop/best_practices",
