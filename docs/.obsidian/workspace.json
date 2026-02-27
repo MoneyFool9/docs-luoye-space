@@ -11,10 +11,24 @@
             "id": "d027867b0ab4680d",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "dataStruct_algo/manual/工具函数（19题）.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
               "icon": "lucide-file",
-              "title": "新标签页"
+              "title": "工具函数（19题）"
             }
           }
         ]
@@ -150,13 +164,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "implement_docs_serverless_cf_workers.md",
+                "file": "dataStruct_algo/manual/工具函数（19题）.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "implement_docs_serverless_cf_workers 的大纲"
+              "title": "工具函数（19题） 的大纲"
             }
           }
         ],
@@ -178,7 +192,7 @@
       "terminal:Open terminal": false
     }
   },
-  "active": "f37c7e226c109a8c",
+  "active": "d027867b0ab4680d",
   "lastOpenFiles": [
     "implement_docs.md",
     "implement_docs_serverless_cf_workers.md",

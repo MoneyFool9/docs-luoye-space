@@ -160,37 +160,35 @@
   --docsearch-primary-color: var(--vp-c-brand-1) !important;
 }
 
-/* 自定义侧边栏在最左边，右边撑满宽度 */
-.VPDoc .container {
-  margin: 0 !important;
-}
+/* 自定义文档容器布局 */
 @media (min-width: 960px) {
+  .VPDoc .container {
+    margin: 0 !important;
+  }
   .VPDoc:not(.has-sidebar) .content {
     max-width: 1552px !important;
   }
-}
-.VPDoc.has-aside .content-container {
-  max-width: 1488px !important;
-}
-@media (min-width: 960px) {
   .VPDoc:not(.has-sidebar) .container {
     display: flex;
     justify-content: center;
     max-width: 1562px !important;
   }
-}
-.aside-container {
-  position: fixed;
-  top: 0;
-  padding-top: calc(
-    var(--vp-nav-height) + var(--vp-layout-top-height, 0px) +
-      var(--vp-doc-top-height, 0px) + 10px
-  ) !important;
-  width: 224px;
-  height: 100vh;
-  overflow-x: hidden;
-  overflow-y: auto;
-  scrollbar-width: none;
+  .VPDoc.has-aside .content-container {
+    max-width: 1488px !important;
+  }
+  .aside-container {
+    position: fixed;
+    top: 0;
+    padding-top: calc(
+      var(--vp-nav-height) + var(--vp-layout-top-height, 0px) +
+        var(--vp-doc-top-height, 0px) + 10px
+    ) !important;
+    width: 224px;
+    height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
 }
 
 /* 桌面端侧边栏收起 */
@@ -199,7 +197,7 @@
 }
 
 @media (min-width: 960px) {
-  /* 左侧侧边栏滚动条极简化：默认接近不可见 */
+  /* 左侧侧边栏滚动条极简化 */
   #VPSidebarNav {
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
@@ -226,7 +224,7 @@
     opacity: 1;
   }
 
-  /* 侧边栏切换按钮：桌面端固定显示，避免收起后丢失 */
+  /* 侧边栏切换按钮 */
   .sidebar-toggle-btn {
     position: fixed;
     top: calc(var(--vp-nav-height) + 16px);
@@ -245,48 +243,50 @@
     color: var(--vp-c-text-2);
     cursor: pointer;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
-    transition: all 0.2s ease;
+    transition: left 0.25s ease, border-color 0.2s, color 0.2s;
   }
 
   .sidebar-toggle-btn:hover {
     border-color: var(--vp-c-brand-1);
     color: var(--vp-c-brand-1);
-    transform: scale(1.05);
   }
 
+  /* 侧边栏收起/展开：使用 transform 与 VitePress 保持一致 */
   .VPSidebar {
-    transition: left 0.2s ease;
+    transition: transform 0.25s ease !important;
   }
 
   .vp-sidebar-collapsed .VPSidebar {
-    left: calc(-1 * var(--vp-sidebar-width));
-    transform: none !important;
+    transform: translateX(-100%) !important;
   }
 
-  /* 收起后按钮固定在左侧边缘，始终可见 */
+  /* 收起后按钮固定在左侧边缘 */
   .vp-sidebar-collapsed .sidebar-toggle-btn {
     left: 12px;
-    right: auto;
     display: inline-flex !important;
   }
 
-  /* 收起后释放左侧占位，避免顶部标题和搜索栏挤压 */
+  /* 收起后释放左侧占位 */
   .vp-sidebar-collapsed .VPNavBar.has-sidebar .content,
   .vp-sidebar-collapsed .VPContent.has-sidebar,
-  .vp-sidebar-collapsed .VPLocalNav {
+  .vp-sidebar-collapsed .VPLocalNav.has-sidebar,
+  .vp-sidebar-collapsed .VPNavBar.has-sidebar .divider {
     padding-left: 0 !important;
   }
 
-  .vp-sidebar-collapsed .VPNavBarSearch {
-    margin-left: 224px !important;
-  }
-
-  .vp-sidebar-collapsed .VPNavBarTitle.has-sidebar,
-  .vp-sidebar-collapsed .VPNavBarTitle.has-sidebar .title {
+  .vp-sidebar-collapsed .VPNavBar.has-sidebar .title {
     width: auto !important;
     min-width: 0 !important;
-    flex: 0 1 auto !important;
-    overflow: visible !important;
+    padding-left: 32px !important;
+  }
+}
+
+/* 1440px+ 时侧边栏更宽（含居中偏移），按钮位置需要跟随 */
+@media (min-width: 1440px) {
+  .sidebar-toggle-btn {
+    left: calc(
+      (100vw - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width) - 9px
+    );
   }
 }
 
