@@ -275,6 +275,7 @@
   }
 
   .vp-sidebar-collapsed .VPNavBar.has-sidebar .title {
+    position: relative !important;
     width: auto !important;
     min-width: 0 !important;
     padding-left: 32px !important;
