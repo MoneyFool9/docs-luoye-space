@@ -264,50 +264,55 @@ async function showDatasetInfo() {
   // 自检：分别用三种检索方式各查一次。
   // 向量索引缺失时，keyword_search 能用而 semantic/hybrid 会报
   // 「Collection not found」——这正是「切到混合检索后召回变 0」的典型症状。
-  console.log('\n═══ 自检：分别测试三种检索方式 ═══')
+  console.log('\n═══ 自检：分别测试各种检索方式 ═══')
   const probeQuery = 'NestJS 模块 定义 @Module'
   const modes = [
-    ['keyword_search', '关键词检索（只用全文索引）'],
-    ['semantic_search', '向量检索（需要向量集合）'],
-    ['hybrid_search', '混合检索（同时需要两者）'],
+    ['keyword_search', '关键词检索', false],
+    ['semantic_search', '向量检索', false],
+    ['hybrid_search', '混合检索', false],
+    // 重排序单独测：若应用侧开了重排序而重排序模型不可用，
+    // 检索会失败或返回空 → 表现为「直查有结果、应用却答不出来」
+    ['hybrid_search', '混合检索 + 重排序', true],
   ]
   const modeResult = {}
 
-  for (const [mode, label] of modes) {
+  for (const [mode, label, rerank] of modes) {
     try {
-      const records = await retrieveFromDataset(probeQuery, { mode })
-      modeResult[mode] = records.length
-      const stat = records.length > 0 ? '✅' : '❌'
+      const records = await retrieveFromDataset(probeQuery, { mode, rerank })
+      modeResult[label] = records.length
       const top = records[0]?.score != null ? `，Top1 分数 ${records[0].score.toFixed(4)}` : ''
-      console.log(`   ${stat} ${label}：召回 ${records.length} 条${top}`)
+      console.log(`   ${records.length > 0 ? '✅' : '❌'} ${label}：召回 ${records.length} 条${top}`)
       if (records.length > 0) {
         const head = (records[0].segment?.content || '').match(/^【([^】]+)】/)?.[1] ?? '(无路径)'
         console.log(`        首位：${head.slice(0, 56)}`)
       }
     } catch (error) {
-      modeResult[mode] = `错误:${error.message.slice(0, 60)}`
-      console.log(`   ❌ ${label}：${error.message.slice(0, 120)}`)
+      modeResult[label] = `错误:${error.message.slice(0, 60)}`
+      console.log(`   ❌ ${label}：${error.message.slice(0, 130)}`)
     }
     await sleep(THROTTLE_MS)
   }
 
-  // 结论：关键词能用、向量不行 → 向量索引缺失，需重建索引
-  const kwOk = typeof modeResult.keyword_search === 'number' && modeResult.keyword_search > 0
-  const vecFailed =
-    typeof modeResult.semantic_search !== 'number' || typeof modeResult.hybrid_search !== 'number'
+  const n = (k) => (typeof modeResult[k] === 'number' ? modeResult[k] : 0)
+  const kwOk = n('关键词检索') > 0
+  const vecOk = n('向量检索') > 0
+  const hybridOk = n('混合检索') > 0
+  const rerankOk = n('混合检索 + 重排序') > 0
+
   console.log('\n═══ 自检结论 ═══')
-  if (kwOk && vecFailed) {
+  if (hybridOk && !rerankOk) {
+    console.log('   🔴 不开重排序能召回，开了就失败 → 重排序模型不可用。')
+    console.log('      若 Dify 应用侧开启了重排序，就会表现为「知识库直查有结果、')
+    console.log('      应用侧上下文为空、回答全是「不清楚」。')
+    console.log('      处理：Dify 应用 → 上下文 → 检索设置，关掉重排序（或换模型）。')
+  } else if (hybridOk) {
+    console.log('   ✅ 混合检索可召回，重排序也正常')
+    console.log('      → 知识库侧没问题；若应用侧仍答不出来，问题在应用自身的检索设置。')
+  } else if (kwOk && !vecOk) {
     console.log('   🔴 关键词检索可用，但向量检索失败 → 向量索引缺失。')
-    console.log('      这会导致：切到向量/混合检索后召回直接变 0，回答全是「不清楚」。')
-    console.log('      原因通常是 embedding 模型变更后未重建索引。')
-    console.log('      处理：① 先定下要用的 embedding 模型（建议 text-embedding-v3）；')
-    console.log('            ② 在知识库设置里选定它并确认；')
-    console.log('            ③ 重新同步以重建索引：')
-    console.log('               gh workflow run sync-dify.yml -f mode=full -f merge=true')
-  } else if (typeof modeResult.hybrid_search === 'number' && modeResult.hybrid_search > 0) {
-    console.log('   ✅ 混合检索可召回内容')
-  } else if (!kwOk && !vecFailed) {
-    console.log('   ⚠️ 三种方式都召回 0 条，检查文档是否处于可用状态')
+    console.log('      处理：gh workflow run sync-dify.yml -f mode=full -f merge=true')
+  } else {
+    console.log('   ⚠️ 各方式均召回 0 条，检查文档是否处于可用状态')
   }
 
   const model = String(info?.embedding_model || '')
