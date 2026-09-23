@@ -57,6 +57,9 @@ const LIMIT = getOption('limit') ? Number(getOption('limit')) : null
 // --inspect[=关键词]：不写入，而是导出知识库文档的分段明细，用于诊断检索质量
 const INSPECT = argv.includes('--inspect') ? '' : (getOption('inspect') ?? null)
 const THROTTLE_MS = Number(process.env.DIFY_THROTTLE_MS || 6500)
+// Dify 默认把每个空行段落切成独立 chunk，导致命中片段过碎（实测平均仅 84 字）。
+// 改用 custom 分段规则，让相邻段落合并且到上限，保证每个 chunk 自带完整上下文。
+const MAX_TOKENS = Number(process.env.DIFY_MAX_TOKENS || 800)
 const PAGE_SIZE = 100
 const REQUEST_TIMEOUT_MS = 120_000
 
@@ -80,6 +83,29 @@ if (DIFY_API_KEY?.startsWith('app-')) {
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
+/**
+ * 自定义分段规则。
+ *
+ * 不指定时 Dify 会把每个空行段落直接当成一个 chunk（实测 NestJS 分片
+ * 371 个段落 = 371 个 chunk，平均 84 字、43% 短于 50 字）。这种碎片
+ * 与问题词面重合度可能很高，却装不下完整答案，表现为「命中了片段但
+ * AI 答不出来」。这里以空行为分隔符、按 max_tokens 向上合并相邻段落，
+ * 让每个 chunk 自带足够上下文。
+ */
+const PROCESS_RULE = {
+  mode: 'custom',
+  rules: {
+    pre_processing_rules: [
+      { id: 'remove_extra_spaces', enabled: true }, // 折叠多余空白
+      { id: 'remove_urls_emails', enabled: false }, // 保留文档里的链接
+    ],
+    segmentation: {
+      separator: '\n\n',
+      max_tokens: MAX_TOKENS,
+    },
+  },
+}
 
 // ────────────────────────────── Dify API ──────────────────────────────
 
@@ -137,13 +163,19 @@ async function listAllDocuments({ silent = false } = {}) {
 const createByText = (name, text) =>
   request(`/datasets/${DIFY_DATASET_ID}/document/create-by-text`, {
     method: 'POST',
-    body: { indexing_technique: 'high_quality', doc_form: 'text_model', name, text },
+    body: {
+      indexing_technique: 'high_quality',
+      doc_form: 'text_model',
+      name,
+      text,
+      process_rule: PROCESS_RULE,
+    },
   })
 
 const updateByText = (documentId, name, text) =>
   request(`/datasets/${DIFY_DATASET_ID}/documents/${documentId}/update-by-text`, {
     method: 'POST',
-    body: { doc_form: 'text_model', name, text },
+    body: { doc_form: 'text_model', name, text, process_rule: PROCESS_RULE },
   })
 
 const deleteDocument = (documentId) =>
@@ -224,6 +256,19 @@ async function inspectSegments(keyword) {
     const bar = '█'.repeat(Math.round(pct / 3))
     console.log(`   ${k.padEnd(9)} ${String(v).padStart(5)} 段  ${String(pct).padStart(3)}%  ${bar}`)
   })
+
+  // 分段过碎是「命中片段却答不出来」的主因，这里给出明确结论
+  const tiny = buckets['<50']
+  if (total > 0) {
+    const tinyPct = (tiny / total) * 100
+    console.log('')
+    if (tinyPct > 25) {
+      console.log(`   ⚠️ ${tinyPct.toFixed(0)}% 的分段短于 50 字，检索容易命中碎片而非完整答案。`)
+      console.log('      建议按 scripts/sync-to-dify.mjs 的 PROCESS_RULE 重新同步以合并段落。')
+    } else {
+      console.log(`   ✅ 碎片比例正常（${tinyPct.toFixed(0)}% 短于 50 字）`)
+    }
+  }
 }
 
 // ────────────────────────────── 文档准备 ──────────────────────────────
@@ -325,7 +370,8 @@ async function main() {
       console.error('❌ --inspect 需要 DIFY_API_KEY / DIFY_DATASET_ID')
       process.exit(1)
     }
-    return inspectSegments(INSPECT)
+    await inspectSegments(INSPECT)
+    return { created: 0, updated: 0, failed: [], pruned: 0, bytes: 0 } // 诊断模式不写入
   }
 
   const sources = await collectSourceFiles()
@@ -338,6 +384,7 @@ async function main() {
   console.log(`   接口：${DIFY_BASE_URL}`)
   console.log(`   知识库：${DIFY_DATASET_ID || '(未配置)'}`)
   console.log(`   模式：${MERGE ? '分片（同目录合并）' : '逐文件'}${DRY_RUN ? ' + DRY-RUN 不写入' : ''}${PRUNE ? ' + 清理远端多余文档' : ''}`)
+  console.log(`   分段：custom 规则，上限 ${MAX_TOKENS} tokens（Dify 默认不合并段落，碎片会拉低检索质量）`)
   console.log(`   节流：${THROTTLE_MS}ms/请求（约 ${Math.floor(60000 / THROTTLE_MS)} 次/分钟）`)
   console.log(`   规模：${sources.length} 个源文件 → ${documents.length} 篇文档`)
 
