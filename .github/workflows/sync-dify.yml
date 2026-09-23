@@ -37,6 +37,11 @@ on:
         required: true
         default: false
         type: boolean
+      retrieve:
+        description: '直查知识库召回（输入一个问题，留空则跳过）'
+        required: false
+        default: ''
+        type: string
 
   # 文档变更后自动增量同步（确认稳定后取消注释即可启用）
   # push:
@@ -95,6 +100,12 @@ jobs:
             echo ""
             echo "── 现状 ──"
             node scripts/sync-to-dify.mjs "--inspect=${{ inputs.inspect }}"
+            exit 0
+          fi
+
+          if [ -n "${{ inputs.retrieve }}" ]; then
+            echo "🔍 直查知识库召回"
+            node scripts/sync-to-dify.mjs "--retrieve=${{ inputs.retrieve }}"
             exit 0
           fi
 
