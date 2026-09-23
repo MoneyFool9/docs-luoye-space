@@ -18,6 +18,7 @@
  *   node scripts/sync-to-dify.mjs --limit=3                # 只处理前 N 篇（冒烟测试）
  *   node scripts/sync-to-dify.mjs --inspect                # 导出分段明细，诊断检索质量
  *   node scripts/sync-to-dify.mjs --inspect=NestJS         # 只看名称含 NestJS 的文档
+ *   node scripts/sync-to-dify.mjs --probe                  # 探测 Dify 分段行为（临时文档，用完即删）
  *
  * 环境变量（.env 或 CI secrets）：
  *   DIFY_API_KEY      知识库 API 密钥（dataset- 开头）
@@ -56,6 +57,8 @@ const CHANGED_SINCE = getOption('changed-since')
 const LIMIT = getOption('limit') ? Number(getOption('limit')) : null
 // --inspect[=关键词]：不写入，而是导出知识库文档的分段明细，用于诊断检索质量
 const INSPECT = argv.includes('--inspect') ? '' : (getOption('inspect') ?? null)
+// --probe：用临时文档探测 Dify 的分段行为（用完即删）
+const PROBE = hasFlag('probe')
 const THROTTLE_MS = Number(process.env.DIFY_THROTTLE_MS || 6500)
 // Dify 默认把每个空行段落切成独立 chunk，导致命中片段过碎（实测平均仅 84 字）。
 // 改用 custom 分段规则，让相邻段落合并且到上限，保证每个 chunk 自带完整上下文。
@@ -323,6 +326,102 @@ async function collectSourceFiles() {
   return out
 }
 
+/**
+ * 探针：验证 process_rule 是否真的生效、以及 Dify 是否合并相邻段落。
+ *
+ * 用同一段内容配不同 separator 创建临时文档，看分段数如何变化：
+ *   若 process_rule 生效且不合并 → 分段数应等于该 separator 切出的块数
+ *   若被忽略（沿用旧规则）→ 三种配置的分段数会相同
+ * 结束后自动删除临时文档，不污染知识库。
+ */
+async function probeSegmentation() {
+  console.log('🧪 分段规则探针（将创建并删除临时文档）\n')
+
+  // 5 个非空行、3 个空行分隔的块，能区分各种切分方式
+  const content = '甲段第一行\n甲段第二行\n\n乙段第一行\n乙段第二行\n\n丙段第一行'
+
+  const cases = [
+    { key: 'nl2', label: 'separator = "\\n\\n"', separator: '\n\n', expect: '3 段' },
+    { key: 'nl', label: 'separator = "\\n"', separator: '\n', expect: '5 段' },
+    { key: 'none', label: 'separator = "🦄"（内容中不存在）', separator: '🦄', expect: '1 段' },
+  ]
+
+  const created = []
+  try {
+    for (const c of cases) {
+      const name = `__probe_${c.key}__.md`
+      const res = await request(`/datasets/${DIFY_DATASET_ID}/document/create-by-text`, {
+        method: 'POST',
+        body: {
+          indexing_technique: 'high_quality',
+          doc_form: 'text_model',
+          name,
+          text: content,
+          process_rule: {
+            mode: 'custom',
+            rules: {
+              pre_processing_rules: [{ id: 'remove_extra_spaces', enabled: false }],
+              segmentation: { separator: c.separator, max_tokens: 500 },
+            },
+          },
+        },
+      })
+      created.push({ ...c, name, id: res?.document?.id, batch: res?.batch })
+      console.log(`   ✓ 已创建 ${c.label}（预期 ${c.expect}）`)
+      await sleep(THROTTLE_MS)
+    }
+
+    // 等索引就绪
+    console.log('\n   等待索引完成…')
+    for (const d of created) {
+      if (!d.batch) continue
+      for (let i = 0; i < 20; i++) {
+        const res = await request(`/datasets/${DIFY_DATASET_ID}/documents/${d.batch}/indexing-status`)
+        const st = (res?.data ?? []).map((x) => x.indexing_status)
+        if (st.length && st.every((s) => s === 'completed' || s === 'error')) break
+        await sleep(THROTTLE_MS)
+      }
+      await sleep(THROTTLE_MS)
+    }
+
+    const observed = []
+    for (const d of created) {
+      const segs = await listSegments(d.id)
+      observed.push(segs.length)
+      console.log(`\n═══ ${d.label} ═══`)
+      console.log(`   预期 ${d.expect} | 实际 ${segs.length} 段`)
+      segs.forEach((s, i) =>
+        console.log(`      [${i + 1}] (${(s.content || '').length}字) ${JSON.stringify((s.content || '').slice(0, 70))}`)
+      )
+      await sleep(THROTTLE_MS)
+    }
+
+    console.log('\n═══ 结论 ═══')
+    const allSame = observed.every((n) => n === observed[0])
+    if (allSame) {
+      console.log(`   ⚠️ 三种 separator 都得到 ${observed[0]} 段 → process_rule 未生效，沿用旧规则`)
+    } else if (observed[1] > observed[0]) {
+      console.log('   ✅ process_rule 生效；Dify 按 separator 切分后不合并相邻块')
+      console.log('      → 要得到粗分段，需让输入文本里 separator 出现得更少')
+    } else {
+      console.log(`   ℹ️ process_rule 生效，但切分行为与预期不同：${observed.join(' / ')} 段`)
+    }
+  } finally {
+    console.log('\n🧹 清理临时文档…')
+    for (const d of created) {
+      if (d.id) {
+        try {
+          await deleteDocument(d.id)
+          console.log(`   🗑️ 已删除 ${d.name}`)
+        } catch (e) {
+          console.log(`   ❌ 删除 ${d.name} 失败：${e.message}`)
+        }
+      }
+      await sleep(THROTTLE_MS)
+    }
+  }
+}
+
 // ────────────────────────────── 索引结果核验 ──────────────────────────────
 
 /**
@@ -365,13 +464,14 @@ async function verifyIndexing(batches, { maxWaitMs = 300_000, cycleMs = 10_000 }
 // ────────────────────────────── 主流程 ──────────────────────────────
 
 async function main() {
-  if (INSPECT !== null) {
+  if (INSPECT !== null || PROBE) {
     if (!HAS_CREDENTIALS) {
-      console.error('❌ --inspect 需要 DIFY_API_KEY / DIFY_DATASET_ID')
+      console.error('❌ --inspect / --probe 需要 DIFY_API_KEY / DIFY_DATASET_ID')
       process.exit(1)
     }
-    await inspectSegments(INSPECT)
-    return { created: 0, updated: 0, failed: [], pruned: 0, bytes: 0 } // 诊断模式不写入
+    if (PROBE) await probeSegmentation()
+    if (INSPECT !== null) await inspectSegments(INSPECT)
+    return { created: 0, updated: 0, failed: [], pruned: 0, bytes: 0 } // 诊断模式不写入正文
   }
 
   const sources = await collectSourceFiles()
