@@ -47,6 +47,11 @@ on:
         required: true
         default: false
         type: boolean
+      datasets:
+        description: '列出账号下所有知识库（核对应用绑定的是哪个）'
+        required: true
+        default: false
+        type: boolean
 
   # 文档变更后自动增量同步（确认稳定后取消注释即可启用）
   # push:
@@ -105,6 +110,12 @@ jobs:
             echo ""
             echo "── 现状 ──"
             node scripts/sync-to-dify.mjs "--inspect=${{ inputs.inspect }}"
+            exit 0
+          fi
+
+          if [ "${{ inputs.datasets }}" = "true" ]; then
+            echo "📚 账号下所有知识库"
+            node scripts/sync-to-dify.mjs --datasets
             exit 0
           fi
 

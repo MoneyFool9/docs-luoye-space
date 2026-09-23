@@ -20,6 +20,7 @@
  *   node scripts/sync-to-dify.mjs --inspect=NestJS         # 只看名称含 NestJS 的文档
  *   node scripts/sync-to-dify.mjs --probe                  # 探测 Dify 分段行为（临时文档，用完即删）
  *   node scripts/sync-to-dify.mjs --retrieve="模块怎么定义"    # 直查知识库召回，隔离验证 chunk 质量
+ *   node scripts/sync-to-dify.mjs --datasets                 # 列出账号下所有知识库，核对应用绑定的是哪个
  *
  * 环境变量（.env 或 CI secrets）：
  *   DIFY_API_KEY      知识库 API 密钥（dataset- 开头）
@@ -62,6 +63,8 @@ const INSPECT = argv.includes('--inspect') ? '' : (getOption('inspect') ?? null)
 const PROBE = hasFlag('probe')
 // --retrieve=<问题>：直查知识库召回，隔离验证 chunk 质量
 const RETRIEVE = getOption('retrieve')
+// --datasets：列出账号下所有知识库，确认应用绑定的究竟是哪一个
+const LIST_DATASETS = hasFlag('datasets')
 // --dataset：打印知识库配置（embedding 模型、索引方式、文档统计）
 const SHOW_DATASET = hasFlag('dataset')
 const THROTTLE_MS = Number(process.env.DIFY_THROTTLE_MS || 6500)
@@ -199,6 +202,41 @@ const deleteDocument = (documentId) =>
  * 面向图文对齐，对中文技术文本的语义区分度往往不足，表现为分数集中在
  * 0.1～0.4 的窄区间、甚至原句匹配也召回不到自己所在的分段。
  */
+/**
+ * 列出账号下所有知识库。
+ *
+ * 排查「直查 API 能召回、但应用侧召回归零」时，首先要排除应用绑定的
+ * 知识库与脚本同步的不是同一个——换过知识库时极易发生。
+ */
+async function listDatasets() {
+  console.log('📚 账号下所有知识库\n')
+  const res = await request('/datasets?page=1&limit=100')
+  const items = res?.data ?? []
+  if (items.length === 0) {
+    console.log('   未找到任何知识库')
+    return
+  }
+
+  items.forEach((d, i) => {
+    const current = d.id === DIFY_DATASET_ID
+    console.log(`── ${i + 1}. ${d.name}${current ? '   ← 脚本当前同步的就是这个' : ''} ──`)
+    console.log(`   ID            ${d.id}`)
+    console.log(`   文档数          ${d.document_count ?? '—'}`)
+    console.log(`   索引方式        ${d.indexing_technique ?? '—'}`)
+    console.log(`   embedding     ${d.embedding_model_provider ?? '—'} / ${d.embedding_model ?? '—'}`)
+    const rm = d.retrieval_model_dict || {}
+    console.log(
+      `   检索方式        ${rm.search_method ?? '—'}${rm.reranking_enable ? ' + 重排序' : ''}，Top K ${rm.top_k ?? '—'}`
+    )
+    console.log('')
+  })
+
+  if (items.length > 1) {
+    console.log('   ⚠️ 存在多个知识库。若 Dify 应用「上下文」里关联的不是标注的那个，')
+    console.log('      应用就检索不到脚本同步的内容。')
+  }
+}
+
 async function showDatasetInfo() {
   console.log('📋 知识库配置\n')
   const info = await request(`/datasets/${DIFY_DATASET_ID}`)
@@ -682,6 +720,15 @@ async function verifyIndexing(batches, { maxWaitMs = 300_000, cycleMs = 10_000 }
 // ────────────────────────────── 主流程 ──────────────────────────────
 
 async function main() {
+  if (LIST_DATASETS) {
+    if (!HAS_CREDENTIALS) {
+      console.error('❌ --datasets 需要 DIFY_API_KEY')
+      process.exit(1)
+    }
+    await listDatasets()
+    return { created: 0, updated: 0, failed: [], pruned: 0, bytes: 0 }
+  }
+
   if (SHOW_DATASET) {
     if (!HAS_CREDENTIALS) {
       console.error('❌ --dataset 需要 DIFY_API_KEY / DIFY_DATASET_ID')
