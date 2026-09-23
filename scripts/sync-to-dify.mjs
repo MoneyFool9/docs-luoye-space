@@ -220,6 +220,30 @@ async function showDatasetInfo() {
     if (v !== undefined && v !== null) console.log(`   ${k.padEnd(16)} ${v}`)
   })
 
+  console.log('\n═══ 原始 retrieval_model_dict ═══')
+  console.log(JSON.stringify(info?.retrieval_model_dict ?? null, null, 2))
+
+  // 自检：用固定问题直接检索一次，看混合检索是否真的能召回
+  console.log('\n═══ 自检：直接检索一次 ═══')
+  try {
+    const records = await retrieveFromDataset('NestJS 模块 定义 @Module')
+    if (records.length === 0) {
+      console.log('   ❌ 召回 0 条 —— 当前检索配置下知识库检索不到任何内容')
+      console.log('      常见原因：')
+      console.log('      - 混合检索选了「Rerank 模型」但未配置可用的重排序模型')
+      console.log('      - 分数阈值设得过高，把全部结果过滤掉了')
+      console.log('      - embedding 模型与索引时不匹配（常见于换过 embedding 模型）')
+    } else {
+      console.log(`   ✅ 召回 ${records.length} 条，Top1 分数 ${(records[0].score ?? 0).toFixed(4)}`)
+      records.slice(0, 3).forEach((r, i) => {
+        const head = (r.segment?.content || '').match(/^【([^】]+)】/)?.[1] ?? '(无路径)'
+        console.log(`      #${i + 1} ${(r.score ?? 0).toFixed(4)}  ${head.slice(0, 50)}`)
+      })
+    }
+  } catch (error) {
+    console.log(`   ❌ 检索报错：${error.message}`)
+  }
+
   const model = String(info?.embedding_model || '')
   const method = String(info?.retrieval_model_dict?.search_method || '')
   const rerank = Boolean(info?.retrieval_model_dict?.reranking_enable)
