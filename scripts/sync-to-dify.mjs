@@ -585,6 +585,45 @@ async function probeSegmentation() {
     } else {
       console.log(`   ℹ️ process_rule 生效，但切分行为与预期不同：${observed.join(' / ')} 段`)
     }
+
+    // ── 追加：向量索引自检 ──
+    // 用刚建的临时文档验证向量检索能否工作，以区分两种失败模式：
+    //   A) embedding 模型不可用 → 新文档也建不了向量，必须换模型
+    //   B) 旧文档缺向量、索引机制本身正常 → 重新索引即可修复
+    console.log('\n═══ 向量索引自检（用刚建的临时文档）═══')
+    const marker = '甲段第一行'
+    const tests = [
+      ['keyword_search', '关键词检索'],
+      ['semantic_search', '向量检索'],
+    ]
+    let vecOk = null
+    for (const [mode, label] of tests) {
+      try {
+        const records = await retrieveFromDataset(marker, { mode })
+        const hit = records.some((r) => (r.segment?.content || '').includes(marker))
+        console.log(`   ${records.length > 0 ? '✅' : '⚠️'} ${label}：召回 ${records.length} 条${hit ? '，包含临时文档内容' : ''}`)
+        if (mode === 'semantic_search') vecOk = records.length > 0
+      } catch (error) {
+        console.log(`   ❌ ${label}：${error.message.slice(0, 110)}`)
+        if (mode === 'semantic_search') vecOk = false
+      }
+      await sleep(THROTTLE_MS)
+    }
+
+    console.log('')
+    if (vecOk === true) {
+      console.log('   🟢 向量检索可用（新文档能建向量）')
+      console.log('      → 意味着旧文档缺向量，重新全量同步即可修复：')
+      console.log('        gh workflow run sync-dify.yml -f mode=full -f merge=true')
+    } else if (vecOk === false) {
+      console.log('   🔴 新文档也建不了向量 → embedding 模型本身不可用。')
+      console.log('      注意：Dify 的 embedding 模型在知识库创建后基本不可更换。')
+      console.log('      处理：新建一个知识库并选用可用的纯文本 embedding 模型')
+      console.log('            （如 text-embedding-v3 / bge-m3），然后：')
+      console.log('            ① 更新 Secret DIFY_DATASET_ID 为新知识库的 ID')
+      console.log('            ② gh workflow run sync-dify.yml -f mode=full')
+      console.log('            ③ 在 Dify 应用里把新知识库关联上去')
+    }
   } finally {
     console.log('\n🧹 清理临时文档…')
     for (const d of created) {
