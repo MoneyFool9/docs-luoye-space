@@ -145,9 +145,6 @@ const updateByText = (documentId, name, text) =>
 const deleteDocument = (documentId) =>
   request(`/datasets/${DIFY_DATASET_ID}/documents/${documentId}`, { method: 'DELETE' })
 
-const getIndexingStatus = (documentId) =>
-  request(`/datasets/${DIFY_DATASET_ID}/documents/${documentId}/indexing-status`)
-
 // ────────────────────────────── 文档准备 ──────────────────────────────
 
 /** 用 git 过滤出指定 ref 之后改动过的文件；git 不可用时退化为全量 */
@@ -201,15 +198,20 @@ async function collectSourceFiles() {
 
 // ────────────────────────────── 索引结果核验 ──────────────────────────────
 
-async function verifyIndexing(documentIds, { maxWaitMs = 300_000, cycleMs = 10_000 } = {}) {
-  const pending = new Set(documentIds)
+/**
+ * 轮询索引状态。
+ * 注意：Dify 的 indexing-status 端点接收的是创建/更新时返回的 batch ID，
+ * 不是 document ID —— 传 document ID 会得到 404 Documents not found。
+ */
+async function verifyIndexing(batches, { maxWaitMs = 300_000, cycleMs = 10_000 } = {}) {
+  const pending = new Map(batches)
   const status = new Map()
   const deadline = Date.now() + maxWaitMs
 
   while (pending.size > 0 && Date.now() < deadline) {
-    for (const id of [...pending]) {
+    for (const [batch] of [...pending]) {
       try {
-        const res = await getIndexingStatus(id)
+        const res = await request(`/datasets/${DIFY_DATASET_ID}/documents/${batch}/indexing-status`)
         const items = res?.data ?? []
         if (items.length === 0) {
           await sleep(THROTTLE_MS)
@@ -217,19 +219,19 @@ async function verifyIndexing(documentIds, { maxWaitMs = 300_000, cycleMs = 10_0
         }
         const statuses = items.map((i) => i.indexing_status)
         if (statuses.every((s) => s === 'completed' || s === 'error')) {
-          status.set(id, statuses.includes('error') ? 'error' : 'completed')
-          pending.delete(id)
+          status.set(batch, statuses.includes('error') ? 'error' : 'completed')
+          pending.delete(batch)
         }
       } catch (error) {
-        status.set(id, `检查失败：${error.message}`)
-        pending.delete(id)
+        status.set(batch, `检查失败：${error.message}`)
+        pending.delete(batch)
       }
       await sleep(THROTTLE_MS)
     }
     if (pending.size > 0) await sleep(cycleMs)
   }
 
-  for (const id of pending) status.set(id, '超时未完成（索引可能仍在后台进行）')
+  for (const [batch] of pending) status.set(batch, '超时未完成（索引可能仍在后台进行）')
   return status
 }
 
@@ -302,13 +304,14 @@ async function main() {
 
     try {
       if (existing) {
-        await updateByText(existing.id, doc.name, doc.text)
+        const res = await updateByText(existing.id, doc.name, doc.text)
         result.updated++
+        if (res?.batch) result.touched.push([res.batch, doc.name])
         console.log(`${label}  ✅ 已更新  ${sizeKb} KB${mergedNote}`)
       } else {
         const res = await createByText(doc.name, doc.text)
         const documentId = res?.document?.id
-        if (documentId) result.touched.push([documentId, doc.name])
+        if (res?.batch) result.touched.push([res.batch, doc.name])
         remote.set(doc.name, { id: documentId, name: doc.name })
         result.created++
         console.log(`${label}  ✅ 已创建  ${sizeKb} KB${mergedNote}`)
@@ -322,9 +325,10 @@ async function main() {
           const refreshed = await listAllDocuments({ silent: true })
           const hit = refreshed.get(doc.name)
           if (hit?.id) {
-            await updateByText(hit.id, doc.name, doc.text)
+            const res = await updateByText(hit.id, doc.name, doc.text)
             result.updated++
             result.bytes += Buffer.byteLength(doc.text)
+            if (res?.batch) result.touched.push([res.batch, doc.name])
             console.log(`${label}  ✅ 已更新（重试命中已存在文档）`)
             await sleep(THROTTLE_MS)
             continue
