@@ -72,17 +72,25 @@ export function stripObsidianNoise(markdown) {
 }
 
 /**
- * 把段落合并成与「章节」对齐的粗块。
+ * 章节分隔标记。
  *
- * 必须从输入文本侧动手的原因（已用 --probe 实测）：Dify 严格按 separator
- * 切分且不合并相邻块，max_tokens 只是「超长才强切」的上限，不是合并目标。
- * 所以传入 process_rule 并不能把碎段落合并起来，只能减少文本里 separator 的出现次数。
- *
- * 做法：以标题为边界，把同一标题下的段落之间的空行去掉。
- * 这样 separator（\n\n）只出现在章节之间，每个 chunk 就是一个完整章节。
- * 代码块内的空行完整保留，不会破坏缩进与可读性。
+ * 为什么要自定义分隔符（而不是用 \n\n）：
+ * Dify 严格按 separator 切分且不合并，用 \n\n 切分就必须删掉正文里所有空行，
+ * 连带代码块里的空行也保不住，会导致 `import` 与 `@Module({` 被切到两个 chunk。
+ * 改用内容里绝不会出现的标记作 separator，就能：
+ *   1. 完整保留代码块空行与可读性
+ *   2. 让 chunk 边界精确落在章节之间
+ * 分隔符在切分时会被移除，不会进入 chunk 内容。
  */
-export function coarsenForChunking(markdown, { maxHeadingLevel = 3, minChars = 120 } = {}) {
+export const CHUNK_MARKER = '\n\n<<<DIFY-SECTION>>>\n\n'
+
+/**
+ * 以标题为边界切分章节，并用 CHUNK_MARKER 拼接。
+ *
+ * 过短的章节（如「## 二、项目结构」后面直接跟子标题）会并入下一节，
+ * 否则它们单独成块后没有任何信息量，却仍可能与问题词面重合而挤占检索名额。
+ */
+export function splitIntoSections(markdown, { maxHeadingLevel = 3, minChars = 120 } = {}) {
   const lines = markdown.split('\n')
   const isFence = (t) => /^(`{3,}|~{3,})/.test(t)
   const headingLevel = (t) => {
@@ -90,7 +98,6 @@ export function coarsenForChunking(markdown, { maxHeadingLevel = 3, minChars = 1
     return m ? m[1].length : 0
   }
 
-  // 1) 先按标题切成章节（代码块内的 # 开头行不算标题）
   const sections = []
   let cur = []
   let inFence = false
@@ -112,44 +119,28 @@ export function coarsenForChunking(markdown, { maxHeadingLevel = 3, minChars = 1
   }
   if (cur.some((l) => l.trim())) sections.push(cur)
 
-  // 2) 删掉章节内部的空行（代码块内的保留），使 separator 只落在章节边界
-  const compact = (section) => {
-    const kept = []
-    let fence = false
-    for (const line of section) {
-      const t = line.trim()
-      if (isFence(t)) {
-        fence = !fence
-        kept.push(line)
-        continue
-      }
-      if (!fence && !t) continue // 章节内空行：删除
-      kept.push(line)
-    }
-    return kept.join('\n').trim()
-  }
-
-  // 3) 过短的章节并入下一节。
-  //    形如「## 二、项目结构」后面直接跟子标题的章节，去掉空行后只剩标题本身，
-  //    单独成块就是没有信息量的碎片。这里用单换行拼接（不能用空行，
-  //    否则又会被 separator 切开），保证合并后仍是一个 chunk。
+  // 过短章节并入下一节（用单换行拼接，保证仍是同一块）
   const merged = []
   for (const section of sections) {
-    const text = compact(section)
+    const text = section.join('\n').trim()
     if (!text) continue
-    if (merged.length > 0 && text.length < minChars) {
-      merged[merged.length - 1] += `\n${text}`
-    } else {
-      merged.push(text)
-    }
+    if (merged.length > 0 && text.length < minChars) merged[merged.length - 1] += `\n${text}`
+    else merged.push(text)
   }
-  // 最后一节若仍然过短，并入前一节
   if (merged.length > 1 && merged[merged.length - 1].length < minChars) {
     const tail = merged.pop()
     merged[merged.length - 1] += `\n${tail}`
   }
 
-  return merged.join('\n\n')
+  return merged
+}
+
+/**
+ * 粗化：把章节用 CHUNK_MARKER 拼接，使每个 chunk 与章节对齐。
+ * 代码块内的空行完整保留。
+ */
+export function coarsenForChunking(markdown, options = {}) {
+  return splitIntoSections(markdown, options).join(CHUNK_MARKER)
 }
 
 /**

@@ -32,7 +32,7 @@ import path from 'path'
 import { execFileSync } from 'child_process'
 import { glob } from 'glob'
 import dotenv from 'dotenv'
-import { normalizeForIndexing, stripObsidianNoise, buildShardDocuments } from './lib/dify-shard.mjs'
+import { normalizeForIndexing, stripObsidianNoise, buildShardDocuments, CHUNK_MARKER } from './lib/dify-shard.mjs'
 
 dotenv.config()
 
@@ -93,18 +93,21 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
  * 不指定时 Dify 会把每个空行段落直接当成一个 chunk（实测 NestJS 分片
  * 371 个段落 = 371 个 chunk，平均 84 字、43% 短于 50 字）。这种碎片
  * 与问题词面重合度可能很高，却装不下完整答案，表现为「命中了片段但
- * AI 答不出来」。这里以空行为分隔符、按 max_tokens 向上合并相邻段落，
- * 让每个 chunk 自带足够上下文。
+ * AI 答不出来」。详见 --probe 的实测结论。
+ *
+ * separator 用 CHUNK_MARKER（正文里绝不会出现的标记），而不是 \n\n：
+ * Dify 只按 separator 切分且不合并相邻块，用 \n\n 就必须删掉正文所有空行，
+ * 连带代码块空行也保不住，会把 `import ...` 与 `@Module({` 切到两个 chunk。
  */
 const PROCESS_RULE = {
   mode: 'custom',
   rules: {
     pre_processing_rules: [
-      { id: 'remove_extra_spaces', enabled: true }, // 折叠多余空白
+      { id: 'remove_extra_spaces', enabled: false }, // 保留原格式，避免破坏代码块缩进
       { id: 'remove_urls_emails', enabled: false }, // 保留文档里的链接
     ],
     segmentation: {
-      separator: '\n\n',
+      separator: CHUNK_MARKER,
       max_tokens: MAX_TOKENS,
     },
   },
@@ -220,12 +223,16 @@ async function inspectSegments(keyword) {
   }
 
   const buckets = { '<50': 0, '50-200': 0, '200-500': 0, '500-1000': 0, '>1000': 0 }
+  let sumAll = 0
+  let countAll = 0
 
   for (const doc of targets) {
     const segs = await listSegments(doc.id)
     const lens = segs.map((s) => (s.content || '').length).sort((a, b) => a - b)
     const sum = lens.reduce((a, b) => a + b, 0)
     const avg = lens.length ? Math.round(sum / lens.length) : 0
+    sumAll += sum
+    countAll += segs.length
 
     console.log(`\n═══ ${doc.name} ═══`)
     console.log(`   分段数 ${segs.length} | 总字数 ${sum} | 平均 ${avg} 字 | 最短 ${lens[0] ?? 0} | 最长 ${lens.at(-1) ?? 0}`)
@@ -271,6 +278,8 @@ async function inspectSegments(keyword) {
     } else {
       console.log(`   ✅ 碎片比例正常（${tinyPct.toFixed(0)}% 短于 50 字）`)
     }
+    const avg = Math.round(sumAll / total)
+    console.log(`   全库平均分段长度：${avg} 字`)
   }
 }
 
