@@ -29,7 +29,7 @@ import path from 'path'
 import { execFileSync } from 'child_process'
 import { glob } from 'glob'
 import dotenv from 'dotenv'
-import { normalizeForIndexing, buildShardDocuments } from './lib/dify-shard.mjs'
+import { normalizeForIndexing, stripObsidianNoise, buildShardDocuments } from './lib/dify-shard.mjs'
 
 dotenv.config()
 
@@ -186,7 +186,8 @@ async function collectSourceFiles() {
       file,
       rel: file.replace(/^docs\//, ''),
       dir: path.dirname(file.replace(/^docs\//, '')),
-      text: normalizeForIndexing(raw),
+      // 先还原双链为可读文本，再去掉会干扰检索的 Obsidian 噪音行
+      text: stripObsidianNoise(normalizeForIndexing(raw)),
     })
   }
 

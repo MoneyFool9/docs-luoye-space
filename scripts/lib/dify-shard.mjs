@@ -21,6 +21,57 @@ export function normalizeForIndexing(markdown) {
 }
 
 /**
+ * 去掉 Obsidian 笔记里的检索噪音。
+ *
+ * 这些行的词面与问题高度重合，向量检索会把它们排到很前面，但信息量为零，
+ * 结果就是「命中了 4 条片段，AI 却答不出来」。需要剔除三类：
+ *   1. 标签行   `#NestJS #基础 #模块`（注意与 markdown 标题 `# 标题` 区分）
+ *   2. 导航行   `返回 [[学习路线]] | 上一章 [[...]] | 下一章 [[...]]`
+ *   3. 空段落   `---` 分隔线、只剩链接的无意义行
+ */
+export function stripObsidianNoise(markdown) {
+  const lines = markdown.split('\n')
+  const kept = []
+  let inFence = false
+
+  for (const line of lines) {
+    const t = line.trim()
+
+    // 代码块内一律保留，避免误删注释行（如 `# 注释` / `#!/bin/bash`）
+    if (/^(`{3,}|~{3,})/.test(t)) {
+      inFence = !inFence
+      kept.push(line)
+      continue
+    }
+    if (inFence) {
+      kept.push(line)
+      continue
+    }
+
+    // 1) 标签行：#tag #tag（`#` 后无空格，因此不会误伤 markdown 标题 `# 标题`）
+    if (t && !t.startsWith('#!') && /^#[^\s#]+(?:\s+#[^\s#]+)*$/.test(t)) continue
+
+    // 2) 笔记间的跳转条：返回 [[X]] | 上一章 [[Y]] | 下一章 [[Z]]
+    //    只认含「上一章 / 下一章」的整行，避免误删正文里的「返回」动词
+    if (/上一章|下一章/.test(t) && t.length < 120) continue
+    if (/^返回\s+\S/.test(t) && t.includes('|') && t.length < 120) continue
+
+    kept.push(line)
+  }
+
+  return (
+    kept
+      .join('\n')
+      // 3) 折叠 3 个以上连续换行
+      .replace(/\n{3,}/g, '\n\n')
+      // 4) 去掉单独成段的分隔线（段落级 `---`，无信息量）
+      .replace(/\n\s*-{3,}\s*\n/g, '\n')
+      .replace(/^\s*-{3,}\s*\n/, '')
+      .trim()
+  )
+}
+
+/**
  * 分片模式下挑选一个「入口文件」，用于 AI 回答里的引用跳转。
  * 优先级：readme/index > 与目录同名 > 名字包含目录名 > 字典序第一个
  */
@@ -64,8 +115,13 @@ export function buildShardDocuments(sources) {
 
       const title = path.basename(key)
       const body = items
-        .map((s) => `## ${path.basename(s.rel, '.md')}\n\n${s.text.trim()}`)
-        .join('\n\n---\n\n')
+        .map((s) => {
+          // 若笔记自带 H1 标题，就不再叠加 `## 文件名`，
+          // 否则两行几乎同义的标题会各自成为一段，挤占检索名额
+          const content = s.text.trim()
+          return /^#\s+/.test(content) ? content : `## ${path.basename(s.rel, '.md')}\n\n${content}`
+        })
+        .join('\n\n') // 不再插 `---`：它自己会成为一个无信息量的 chunk
 
       return {
         name: `${key}.md`,
