@@ -277,6 +277,22 @@ async function auditSegments() {
     await sleep(THROTTLE_MS)
   }
 
+  console.log('═══ 分段字段审视（取一个分段看全部字段）═══')
+  try {
+    const firstDoc = [...remote.values()][0]
+    const segs = await listSegments(firstDoc.id)
+    if (segs[0]) {
+      const fields = Object.keys(segs[0])
+      console.log(`   字段列表: ${fields.join(', ')}`)
+      console.log(`   keywords 字段值: ${JSON.stringify(segs[0].keywords ?? null)}`)
+      // 全文检索若依赖其他字段（如 index_node_hash / content 分词），这里能看出来
+      const hint = fields.filter((f) => /keyword|index|hash|word|token/i.test(f))
+      console.log(`   可能影响全文索引的字段: ${hint.join(', ') || '(无)'}`)
+    }
+  } catch (error) {
+    console.log(`   取分段失败：${error.message}`)
+  }
+
   console.log('\n═══ 全文索引（keywords）统计 ═══')
   console.log(`   带 keywords 的分段：${withKeywords}`)
   console.log(`   不带 keywords 的分段：${withoutKeywords}`)
@@ -614,6 +630,120 @@ async function collectSourceFiles() {
 }
 
 /**
+ * 探针：确认 process_rule 是否影响全文索引（keywords）的生成。
+ *
+ * 现象：重新同步后所有分段的 keywords 都是 null，keyword_search 召回 0 条，
+ * 而混合检索（含向量部分）正常。需要区分是「自定义 process_rule 导致」
+ * 还是「该知识库本就不生成 keywords」。
+ */
+async function probeKeywordGeneration() {
+  console.log('\n🧪 全文索引（keywords）探针\n')
+
+  const content = [
+    '# 测试标题',
+    '',
+    '这是用于探测全文索引的第一段内容，包含 NestJS 模块与装饰器等术语。',
+    '',
+    '第二段内容用于验证关键词提取是否正常工作。',
+  ].join('\n')
+
+  const cases = [
+    { key: 'auto', label: 'automatic 模式', rule: { mode: 'automatic' } },
+    { key: 'custom', label: 'custom 模式（自定义分隔符）', rule: PROCESS_RULE },
+    {
+      key: 'customnl',
+      label: 'custom 模式（空行分隔符）',
+      rule: {
+        mode: 'custom',
+        rules: {
+          pre_processing_rules: [
+            { id: 'remove_extra_spaces', enabled: false },
+            { id: 'remove_urls_emails', enabled: false },
+          ],
+          segmentation: { separator: '\n\n', max_tokens: 800 },
+        },
+      },
+    },
+  ]
+
+  const created = []
+  try {
+    for (const c of cases) {
+      const name = `__kwprobe_${c.key}__.md`
+      const res = await request(`/datasets/${DIFY_DATASET_ID}/document/create-by-text`, {
+        method: 'POST',
+        body: {
+          indexing_technique: 'high_quality',
+          doc_form: 'text_model',
+          name,
+          text: content,
+          process_rule: c.rule,
+        },
+      })
+      created.push({ ...c, name, id: res?.document?.id, batch: res?.batch, kw: 0, segs: 0 })
+      console.log(`   ✓ 已创建 ${c.label}`)
+      await sleep(THROTTLE_MS)
+    }
+
+    console.log('\n   等待索引完成…')
+    for (const d of created) {
+      if (!d.batch) continue
+      for (let i = 0; i < 20; i++) {
+        const res = await request(`/datasets/${DIFY_DATASET_ID}/documents/${d.batch}/indexing-status`)
+        const st = (res?.data ?? []).map((x) => x.indexing_status)
+        if (st.length && st.every((s) => s === 'completed' || s === 'error')) break
+        await sleep(THROTTLE_MS)
+      }
+      await sleep(THROTTLE_MS)
+    }
+
+    console.log('')
+    for (const d of created) {
+      const segs = await listSegments(d.id)
+      d.segs = segs.length
+      d.kw = segs.filter((s) => (s.keywords ?? []).length > 0).length
+      console.log(`   ${d.label}`)
+      console.log(`      分段 ${segs.length} | 带 keywords ${d.kw}`)
+      segs.slice(0, 2).forEach((s) => {
+        console.log(`      [${(s.content || '').length}字] keywords=${JSON.stringify(s.keywords ?? null)}`)
+      })
+      await sleep(THROTTLE_MS)
+    }
+
+    console.log('\n═══ 结论 ═══')
+    const auto = created.find((c) => c.key === 'auto')
+    const cust = created.find((c) => c.key === 'custom')
+    if (auto && cust) {
+      if (auto.kw === 0 && cust.kw === 0) {
+        console.log('   ℹ️ 三种模式都不生成 keywords')
+        console.log('      → 该知识库（或当前 Dify 版本）不做关键词提取。')
+        console.log('        这意味着 keyword_search 必然召回 0 条，')
+        console.log('        应用侧的检索方式必须用「向量检索」或「混合检索」。')
+      } else if (auto.kw > 0 && cust.kw === 0) {
+        console.log('   🔴 automatic 能生成 keywords，custom 不能。')
+        console.log('      → 自定义 process_rule 会抑制关键词提取。')
+        console.log('        处理：改用 automatic 模式，并靠输入文本控制分段粒度。')
+      } else {
+        console.log('   ✅ 自定义 process_rule 不影响 keywords 生成')
+      }
+    }
+  } finally {
+    console.log('\n🧹 清理临时文档…')
+    for (const d of created) {
+      if (d.id) {
+        try {
+          await deleteDocument(d.id)
+          console.log(`   🗑️ 已删除 ${d.name}`)
+        } catch (e) {
+          console.log(`   ❌ 删除 ${d.name} 失败：${e.message}`)
+        }
+      }
+      await sleep(THROTTLE_MS)
+    }
+  }
+}
+
+/**
  * 探针：验证 process_rule 是否真的生效、以及 Dify 是否合并相邻段落。
  *
  * 用同一段内容配不同 separator 创建临时文档，看分段数如何变化：
@@ -822,7 +952,10 @@ async function main() {
       console.error('❌ --retrieve / --inspect / --probe 需要 DIFY_API_KEY / DIFY_DATASET_ID')
       process.exit(1)
     }
-    if (PROBE) await probeSegmentation()
+    if (PROBE) {
+      await probeSegmentation()
+      await probeKeywordGeneration()
+    }
     if (INSPECT !== null) await inspectSegments(INSPECT)
     if (RETRIEVE !== null) await inspectRetrieval(RETRIEVE)
     return { created: 0, updated: 0, failed: [], pruned: 0, bytes: 0 } // 诊断模式不写入正文
