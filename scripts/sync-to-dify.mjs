@@ -221,18 +221,48 @@ async function showDatasetInfo() {
   })
 
   const model = String(info?.embedding_model || '')
+  const method = String(info?.retrieval_model_dict?.search_method || '')
+  const rerank = Boolean(info?.retrieval_model_dict?.reranking_enable)
+  const topK = info?.retrieval_model_dict?.top_k
+  const thresholdOn = Boolean(info?.retrieval_model_dict?.score_threshold_enabled)
+
   console.log('\n═══ 建议 ═══')
+
+  // 检索方式是最关键的一项：关键词检索只做字面匹配，中文自然问法很难命中
+  if (method === 'keyword_search') {
+    console.log('   ⚠️ 检索方式是「关键词检索」（keyword_search），只做字面匹配。')
+    console.log('      后果：笔记里写「@Module() 装饰器」时，用这个词能命中；')
+    console.log('      但用户问「模块怎么定义」就词面对不上，召回不到或召回错。')
+    console.log('      建议改为「向量检索」或「混合检索」：')
+    console.log('      Dify 控制台 → 知识库 → 设置 → 检索设置 → 检索方式')
+  } else if (method === 'hybrid_search') {
+    console.log('   ✅ 已用混合检索（hybrid_search），兼顾字面与语义匹配')
+  } else if (method === 'semantic_search') {
+    console.log('   ✅ 已用向量检索（semantic_search）')
+  }
+
   if (/multimodal/i.test(model)) {
-    console.log(`   ⚠️ 当前用的是多模态向量模型「${model}」。`)
-    console.log('      它面向图文对齐训练，对中文技术文本的语义区分度不足，')
-    console.log('      容易造成「分数集中在窄区间、原句也召回不到自己」。')
-    console.log('      建议在知识库设置中改用纯文本向量模型，如 text-embedding-v3（通义）')
-    console.log('      或 bge-m3，然后重新索引。')
-  } else if (!info?.retrieval_model_dict?.reranking_enable) {
-    console.log('   向量模型看起来正常，但未开启重排序（Rerank）。')
-    console.log('   开启重排序通常能明显提升中文技术文档的召回准确度。')
-  } else {
-    console.log('   ✅ 向量模型与重排序配置看起来正常')
+    console.log(`   ⚠️ embedding 用的是多模态模型「${model}」，面向图文对齐，`)
+    console.log('      对中文技术文本的语义区分度不足。建议换成纯文本模型')
+    console.log('      （如 text-embedding-v3 / bge-m3），然后重新索引。')
+  }
+
+  if (!rerank) {
+    console.log('   ⚠️ 未开启重排序（Rerank）。它能在初步召回后重新精排，')
+    console.log('      对中文技术文档的提升通常很明显，建议开启。')
+  }
+
+  if (topK != null && topK <= 2) {
+    console.log(`   ⚠️ Top K 仅为 ${topK}，只召回 ${topK} 个分段，容错空间很小。`)
+    console.log('      命中一个无关分段就几乎没机会补救，建议调到 4～6。')
+  }
+
+  if (!thresholdOn) {
+    console.log('   ℹ️ 未启用分数阈值（一般无需修改，除非想过滤低质量召回）')
+  }
+
+  if (method !== 'keyword_search' && rerank && !/multimodal/i.test(model) && (topK ?? 0) > 2) {
+    console.log('   ✅ 检索配置看起来正常')
   }
 }
 async function retrieveFromDataset(query, { topK = 5 } = {}) {
