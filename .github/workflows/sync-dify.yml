@@ -32,6 +32,11 @@ on:
         required: false
         default: ''
         type: string
+      probe:
+        description: '探测分段行为（创建并删除临时文档）'
+        required: true
+        default: false
+        type: boolean
 
   # 文档变更后自动增量同步（确认稳定后取消注释即可启用）
   # push:
@@ -83,6 +88,15 @@ jobs:
       - name: 同步文档到 Dify
         run: |
           ARGS=""
+
+          if [ "${{ inputs.probe }}" = "true" ]; then
+            echo "🧪 探测分段行为"
+            node scripts/sync-to-dify.mjs --probe
+            echo ""
+            echo "── 现状 ──"
+            node scripts/sync-to-dify.mjs "--inspect=${{ inputs.inspect }}"
+            exit 0
+          fi
 
           if [ -n "${{ inputs.inspect }}" ]; then
             echo "🔬 诊断模式：分段明细"
