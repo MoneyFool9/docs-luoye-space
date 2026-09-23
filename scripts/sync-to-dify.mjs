@@ -358,10 +358,12 @@ async function showDatasetInfo() {
 
   for (const [mode, label, rerank] of modes) {
     try {
+      const t0 = Date.now()
       const records = await retrieveFromDataset(probeQuery, { mode, rerank })
+      const ms = Date.now() - t0
       modeResult[label] = records.length
       const top = records[0]?.score != null ? `，Top1 分数 ${records[0].score.toFixed(4)}` : ''
-      console.log(`   ${records.length > 0 ? '✅' : '❌'} ${label}：召回 ${records.length} 条${top}`)
+      console.log(`   ${records.length > 0 ? '✅' : '❌'} ${label}：召回 ${records.length} 条${top}  [${ms}ms]`)
       if (records.length > 0) {
         const head = (records[0].segment?.content || '').match(/^【([^】]+)】/)?.[1] ?? '(无路径)'
         console.log(`        首位：${head.slice(0, 56)}`)
@@ -391,6 +393,11 @@ async function showDatasetInfo() {
   } else if (kwOk && !vecOk) {
     console.log('   🔴 关键词检索可用，但向量检索失败 → 向量索引缺失。')
     console.log('      处理：gh workflow run sync-dify.yml -f mode=full -f merge=true')
+  } else if (hybridOk && !kwOk) {
+    console.log('   ℹ️ 全文索引不可用（keywords 为空）、向量检索可用。')
+    console.log('      若应用侧用混合检索，关键词那一路会返回空；')
+    console.log('      若重排序/超时再叠加，就很容易整体召回归零。')
+    console.log('      最稳的做法：应用侧用「向量检索」并关掉重排序。')
   } else {
     console.log('   ⚠️ 各方式均召回 0 条，检查文档是否处于可用状态')
   }
