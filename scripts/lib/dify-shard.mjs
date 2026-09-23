@@ -72,6 +72,20 @@ export function stripObsidianNoise(markdown) {
 }
 
 /**
+ * 从章节首行提取标题路径。
+ *
+ * 每个 chunk 都是独立的检索单元，脱离文档后「3.1 @Module() 装饰器」
+ * 这种标题看不出它属于哪篇笔记、哪一章。给它补上完整路径能让向量
+ * 与关键词匹配都更准，也能让 AI 判新片段是否与问题相关。
+ */
+function headingPath(profile, section) {
+  const m = section.match(/^(#{1,6})\s+(.+)$/m)
+  if (!m) return ''
+  const title = m[2].trim()
+  return profile ? `${profile} > ${title}` : title
+}
+
+/**
  * 章节分隔标记。
  *
  * 为什么要自定义分隔符（而不是用 \n\n）：
@@ -138,9 +152,17 @@ export function splitIntoSections(markdown, { maxHeadingLevel = 3, minChars = 12
 /**
  * 粗化：把章节用 CHUNK_MARKER 拼接，使每个 chunk 与章节对齐。
  * 代码块内的空行完整保留。
+ *
+ * profile 是所属笔记名（如「NestJS-01 项目与模块」），会作为标题路径的
+ * 首段前缀到每个 chunk，使片段脱离文档后仍能自述出处。
  */
-export function coarsenForChunking(markdown, options = {}) {
-  return splitIntoSections(markdown, options).join(CHUNK_MARKER)
+export function coarsenForChunking(markdown, { profile = '', ...options } = {}) {
+  return splitIntoSections(markdown, options)
+    .map((section) => {
+      const path = headingPath(profile, section)
+      return path ? `【${path}】\n${section}` : section
+    })
+    .join(CHUNK_MARKER)
 }
 
 /**
@@ -182,25 +204,30 @@ export function buildShardDocuments(sources) {
     .map(([key, items]) => {
       if (items.length === 1) {
         const s = items[0]
-        return { name: s.rel, text: coarsenForChunking(s.text), entry: `docs/${s.rel}`, count: 1 }
+        return {
+          name: s.rel,
+          text: coarsenForChunking(s.text, { profile: path.basename(s.rel, '.md') }),
+          entry: `docs/${s.rel}`,
+          count: 1,
+        }
       }
 
       const title = path.basename(key)
-      const body = items
-        .map((s) => {
-          // 若笔记自带 H1 标题，就不再叠加 `## 文件名`，
-          // 否则两行几乎同义的标题会各自成为一段，挤占检索名额
-          const content = s.text.trim()
-          return /^#\s+/.test(content) ? content : `## ${path.basename(s.rel, '.md')}\n\n${content}`
-        })
-        .join('\n\n') // 不再插 `---`：它自己会成为一个无信息量的 chunk
 
-      const assembled = `# ${title} 系列笔记\n\n> 本文档由 ${items.length} 篇相关笔记合并而成，属于同一主题系列。\n\n${body}`
-
+      // 每篇笔记单独粗化（带上自己的标题路径），而不是整个分片一次性粗化：
+      // 否则 H1 会把分片标题当成路径首段，丢失「哪篇笔记」这一层信息
       return {
         name: `${key}.md`,
-        // 组装后再粗化：让 chunk 与章节对齐，避免检索命中碎行
-        text: coarsenForChunking(assembled),
+        text: items
+          .map((s) => {
+            const content = s.text.trim()
+            // 笔记自带 H1 时不再叠加文件名标题，避免同义标题各占一个 chunk
+            const withHeading = /^#\s+/.test(content)
+              ? content
+              : `## ${path.basename(s.rel, '.md')}\n\n${content}`
+            return coarsenForChunking(withHeading, { profile: path.basename(s.rel, '.md') })
+          })
+          .join(CHUNK_MARKER),
         entry: `docs/${pickEntryFile(key, items.map((s) => s.rel))}`,
         count: items.length,
       }
