@@ -27,6 +27,11 @@ on:
         required: true
         default: false
         type: boolean
+      inspect:
+        description: '诊断模式：文档名关键词（留空则不诊断）'
+        required: false
+        default: ''
+        type: string
 
   # 文档变更后自动增量同步（确认稳定后取消注释即可启用）
   # push:
@@ -78,6 +83,12 @@ jobs:
       - name: 同步文档到 Dify
         run: |
           ARGS=""
+
+          if [ -n "${{ inputs.inspect }}" ]; then
+            echo "🔬 诊断模式：分段明细"
+            node scripts/sync-to-dify.mjs "--inspect=${{ inputs.inspect }}"
+            exit 0
+          fi
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             if [ "${{ inputs.mode }}" = "incremental" ]; then
