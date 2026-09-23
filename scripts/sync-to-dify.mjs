@@ -223,25 +223,53 @@ async function showDatasetInfo() {
   console.log('\n═══ 原始 retrieval_model_dict ═══')
   console.log(JSON.stringify(info?.retrieval_model_dict ?? null, null, 2))
 
-  // 自检：用固定问题直接检索一次，看混合检索是否真的能召回
-  console.log('\n═══ 自检：直接检索一次 ═══')
-  try {
-    const records = await retrieveFromDataset('NestJS 模块 定义 @Module')
-    if (records.length === 0) {
-      console.log('   ❌ 召回 0 条 —— 当前检索配置下知识库检索不到任何内容')
-      console.log('      常见原因：')
-      console.log('      - 混合检索选了「Rerank 模型」但未配置可用的重排序模型')
-      console.log('      - 分数阈值设得过高，把全部结果过滤掉了')
-      console.log('      - embedding 模型与索引时不匹配（常见于换过 embedding 模型）')
-    } else {
-      console.log(`   ✅ 召回 ${records.length} 条，Top1 分数 ${(records[0].score ?? 0).toFixed(4)}`)
-      records.slice(0, 3).forEach((r, i) => {
-        const head = (r.segment?.content || '').match(/^【([^】]+)】/)?.[1] ?? '(无路径)'
-        console.log(`      #${i + 1} ${(r.score ?? 0).toFixed(4)}  ${head.slice(0, 50)}`)
-      })
+  // 自检：分别用三种检索方式各查一次。
+  // 向量索引缺失时，keyword_search 能用而 semantic/hybrid 会报
+  // 「Collection not found」——这正是「切到混合检索后召回变 0」的典型症状。
+  console.log('\n═══ 自检：分别测试三种检索方式 ═══')
+  const probeQuery = 'NestJS 模块 定义 @Module'
+  const modes = [
+    ['keyword_search', '关键词检索（只用全文索引）'],
+    ['semantic_search', '向量检索（需要向量集合）'],
+    ['hybrid_search', '混合检索（同时需要两者）'],
+  ]
+  const modeResult = {}
+
+  for (const [mode, label] of modes) {
+    try {
+      const records = await retrieveFromDataset(probeQuery, { mode })
+      modeResult[mode] = records.length
+      const stat = records.length > 0 ? '✅' : '❌'
+      const top = records[0]?.score != null ? `，Top1 分数 ${records[0].score.toFixed(4)}` : ''
+      console.log(`   ${stat} ${label}：召回 ${records.length} 条${top}`)
+      if (records.length > 0) {
+        const head = (records[0].segment?.content || '').match(/^【([^】]+)】/)?.[1] ?? '(无路径)'
+        console.log(`        首位：${head.slice(0, 56)}`)
+      }
+    } catch (error) {
+      modeResult[mode] = `错误:${error.message.slice(0, 60)}`
+      console.log(`   ❌ ${label}：${error.message.slice(0, 120)}`)
     }
-  } catch (error) {
-    console.log(`   ❌ 检索报错：${error.message}`)
+    await sleep(THROTTLE_MS)
+  }
+
+  // 结论：关键词能用、向量不行 → 向量索引缺失，需重建索引
+  const kwOk = typeof modeResult.keyword_search === 'number' && modeResult.keyword_search > 0
+  const vecFailed =
+    typeof modeResult.semantic_search !== 'number' || typeof modeResult.hybrid_search !== 'number'
+  console.log('\n═══ 自检结论 ═══')
+  if (kwOk && vecFailed) {
+    console.log('   🔴 关键词检索可用，但向量检索失败 → 向量索引缺失。')
+    console.log('      这会导致：切到向量/混合检索后召回直接变 0，回答全是「不清楚」。')
+    console.log('      原因通常是 embedding 模型变更后未重建索引。')
+    console.log('      处理：① 先定下要用的 embedding 模型（建议 text-embedding-v3）；')
+    console.log('            ② 在知识库设置里选定它并确认；')
+    console.log('            ③ 重新同步以重建索引：')
+    console.log('               gh workflow run sync-dify.yml -f mode=full -f merge=true')
+  } else if (typeof modeResult.hybrid_search === 'number' && modeResult.hybrid_search > 0) {
+    console.log('   ✅ 混合检索可召回内容')
+  } else if (!kwOk && !vecFailed) {
+    console.log('   ⚠️ 三种方式都召回 0 条，检查文档是否处于可用状态')
   }
 
   const model = String(info?.embedding_model || '')
@@ -289,19 +317,17 @@ async function showDatasetInfo() {
     console.log('   ✅ 检索配置看起来正常')
   }
 }
-async function retrieveFromDataset(query, { topK = 5 } = {}) {
-  const res = await request(`/datasets/${DIFY_DATASET_ID}/retrieve`, {
-    method: 'POST',
-    body: {
-      query,
-      retrieval_model: {
-        search_method: 'semantic_search',
-        reranking_enable: false,
-        top_k: topK,
-        score_threshold_enabled: false,
-      },
-    },
-  })
+async function retrieveFromDataset(query, { topK = 5, mode = null, rerank = false } = {}) {
+  const body = { query }
+  if (mode) {
+    body.retrieval_model = {
+      search_method: mode,
+      reranking_enable: rerank,
+      top_k: topK,
+      score_threshold_enabled: false,
+    }
+  }
+  const res = await request(`/datasets/${DIFY_DATASET_ID}/retrieve`, { method: 'POST', body })
   return res?.records ?? []
 }
 
