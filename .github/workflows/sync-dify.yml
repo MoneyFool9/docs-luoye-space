@@ -4,55 +4,106 @@ on:
   # 手动触发
   workflow_dispatch:
     inputs:
-      reason:
-        description: '同步原因'
-        required: false
-        default: '手动触发文档同步'
-  
-  # 可选：定期同步（每周日凌晨执行）
-  # schedule:
-  #   - cron: '0 0 * * 0'
+      mode:
+        description: '同步模式'
+        required: true
+        default: 'incremental'
+        type: choice
+        options:
+          - incremental   # 只同步本次改动过的文档（默认，快）
+          - full          # 全量比对并更新所有文档
+      merge:
+        description: '按目录合并为分片文档（规避 Dify 文档数配额）'
+        required: true
+        default: true
+        type: boolean
+      prune:
+        description: '删除本地已不存在的远端文档（会改变知识库内容）'
+        required: true
+        default: false
+        type: boolean
+      dry_run:
+        description: '仅预演，不实际写入'
+        required: true
+        default: false
+        type: boolean
 
-# 设置权限
+  # 文档变更后自动增量同步（确认稳定后取消注释即可启用）
+  # push:
+  #   branches: [main]
+  #   paths: ['docs/**/*.md']
+
 permissions:
   contents: read
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    name: 同步文档到Dify知识库
-    
+    name: 同步文档到 Dify 知识库
+
+    env:
+      DIFY_API_KEY: ${{ secrets.DIFY_API_KEY }}
+      DIFY_DATASET_ID: ${{ secrets.DIFY_DATASET_ID }}
+      DIFY_BASE_URL: ${{ secrets.DIFY_BASE_URL || 'https://api.dify.ai/v1' }}
+      # 免费版限 10 次知识库请求/分钟，这里留出余量
+      DIFY_THROTTLE_MS: '6500'
+
     steps:
-      - name: Checkout代码
+      - name: Checkout 代码
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
-      
-      - name: 设置Node.js环境
+          # 增量同步需要与上一个提交比对，必须拿到提交历史
+          fetch-depth: 0
+
+      - name: 设置 Node.js 环境
         uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: npm
-      
-      - name: 安装依赖
-        run: npm ci
-      
-      - name: 同步文档到Dify
-        env:
-          DIFY_API_KEY: ${{ secrets.DIFY_API_KEY }}
-          DIFY_DATASET_ID: ${{ secrets.DIFY_DATASET_ID }}
-          DIFY_BASE_URL: ${{ secrets.DIFY_BASE_URL || 'https://api.dify.ai/v1' }}
+          node-version: 20
+
+      - name: 安装脚本依赖
+        # 同步脚本只依赖 glob / dotenv，无需为 VitePress 全量安装
+        run: npm install --no-save --no-audit --no-fund glob@10 dotenv@16
+
+      - name: 校验必要的 Secrets
         run: |
-          echo "🚀 开始同步文档到Dify知识库..."
-          echo "原因: ${{ github.event.inputs.reason || '定期同步' }}"
-          node scripts/sync-to-dify.mjs
-      
-      - name: 同步结果通知
-        if: always()
+          missing=0
+          [ -z "$DIFY_API_KEY" ] && { echo "::error::缺少 Secret：DIFY_API_KEY（知识库 API 密钥，dataset- 开头）"; missing=1; }
+          [ -z "$DIFY_DATASET_ID" ] && { echo "::error::缺少 Secret：DIFY_DATASET_ID（知识库 ID）"; missing=1; }
+          case "$DIFY_API_KEY" in
+            app-*) echo "::error::DIFY_API_KEY 是应用 Token（app- 开头），知识库接口需要 dataset- 开头的密钥"; missing=1 ;;
+          esac
+          [ "$missing" = "1" ] && exit 1
+          echo "✅ Secrets 校验通过"
+
+      - name: 同步文档到 Dify
         run: |
-          if [ $? -eq 0 ]; then
-            echo "✅ 文档同步成功！"
-          else
-            echo "❌ 文档同步失败，请检查日志。"
-            exit 1
+          ARGS=""
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ inputs.mode }}" = "incremental" ]; then
+              BASE="${{ github.event.before }}"
+              case "$BASE" in
+                ""|"0000000000000000000000000000000000000000") BASE="HEAD~1" ;;
+              esac
+              ARGS="$ARGS --changed-since=$BASE"
+            fi
+            [ "${{ inputs.merge }}" = "true" ] || ARGS="$ARGS --no-merge"
+            [ "${{ inputs.prune }}" = "true" ] && ARGS="$ARGS --prune"
+            [ "${{ inputs.dry_run }}" = "true" ] && ARGS="$ARGS --dry-run"
           fi
+
+          echo "🚀 node scripts/sync-to-dify.mjs $ARGS"
+          node scripts/sync-to-dify.mjs $ARGS
+
+      - name: 同步失败时输出排查提示
+        if: failure()
+        run: |
+          {
+            echo "### ❌ 文档同步失败"
+            echo ""
+            echo "常见原因："
+            echo "- \`DIFY_API_KEY\` 或 \`DIFY_DATASET_ID\` 未配置 / 已失效"
+            echo "- \`DIFY_API_KEY\` 误用了应用 Token（\`app-\` 开头），知识库接口需要 \`dataset-\` 开头的密钥"
+            echo "- 超出 Dify 免费版配额（50 个知识库文档 / 50MB 存储）；分片模式约 18 篇可规避"
+            echo "- 触发知识库请求限流（免费版 10 次/分钟）"
+          } >> "$GITHUB_STEP_SUMMARY"

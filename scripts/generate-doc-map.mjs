@@ -1,5 +1,6 @@
 import fs from 'fs'
 import { glob } from 'glob'
+import { buildShardEntryMap } from './lib/dify-shard.mjs'
 
 /**
  * 生成文档路径映射表
@@ -42,10 +43,28 @@ async function generateDocMap() {
     }
   })
 
+  // 追加 Dify 知识库分片名映射
+  // 知识库按目录合并为分片文档（详见 scripts/lib/dify-shard.mjs），
+  // AI 回答引用的文档名可能是分片名（如 React.md），这里补上入口文件的映射，
+  // 否则 DifyChat.vue 用 basename 查不到路径，引用就点不动。
+  const shardSources = files.map(file => {
+    const normalizedPath = file.replace(/\\/g, '/')
+    const rel = normalizedPath.replace(/^docs\//, '')
+    return { rel, dir: rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : '.', text: '' }
+  })
+  const shardMap = buildShardEntryMap(shardSources)
+  let shardAdded = 0
+  for (const [shardName, entryPath] of Object.entries(shardMap)) {
+    if (docMap[shardName]) continue  // 不覆盖真实文件名
+    docMap[shardName] = entryPath
+    shardAdded++
+  }
+
   // 输出统计信息
   console.log(`📊 映射统计:`)
-  console.log(`   - 唯一文件名: ${Object.keys(docMap).length - duplicates.size}`)
+  console.log(`   - 唯一文件名: ${Object.keys(docMap).length - duplicates.size - shardAdded}`)
   console.log(`   - 同名文件: ${duplicates.size}`)
+  console.log(`   - 知识库分片名: ${shardAdded}`)
 
   if (duplicates.size > 0) {
     console.log(`\n⚠️  发现同名文件（将返回第一个匹配）:`)

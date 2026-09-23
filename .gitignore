@@ -8,3 +8,6 @@ cache
 *.local
 .env
 .obsidian
+# 本地工具产物
+.claudian/
+.playwright-mcp/
