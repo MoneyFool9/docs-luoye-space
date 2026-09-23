@@ -62,6 +62,8 @@ const INSPECT = argv.includes('--inspect') ? '' : (getOption('inspect') ?? null)
 const PROBE = hasFlag('probe')
 // --retrieve=<问题>：直查知识库召回，隔离验证 chunk 质量
 const RETRIEVE = getOption('retrieve')
+// --dataset：打印知识库配置（embedding 模型、索引方式、文档统计）
+const SHOW_DATASET = hasFlag('dataset')
 const THROTTLE_MS = Number(process.env.DIFY_THROTTLE_MS || 6500)
 // Dify 默认把每个空行段落切成独立 chunk，导致命中片段过碎（实测平均仅 84 字）。
 // 改用 custom 分段规则，让相邻段落合并且到上限，保证每个 chunk 自带完整上下文。
@@ -191,12 +193,48 @@ const deleteDocument = (documentId) =>
   request(`/datasets/${DIFY_DATASET_ID}/documents/${documentId}`, { method: 'DELETE' })
 
 /**
- * 直接检索知识库（用 App Token 做不到，必须用 Dataset API Key）。
+ * 打印知识库配置。
  *
- * 用途：把「知识库本身召回得好不好」与「应用侧配置（问题优化 / 重排序 /
- * Top K）」分离开。若这里能准确召回目标 chunk、而线上问答仍不稳定，
- * 那问题就在应用配置而不在知识库内容。
+ * embedding 模型直接决定召回质量：多模态向量模型（如 multimodal-embedding-v1）
+ * 面向图文对齐，对中文技术文本的语义区分度往往不足，表现为分数集中在
+ * 0.1～0.4 的窄区间、甚至原句匹配也召回不到自己所在的分段。
  */
+async function showDatasetInfo() {
+  console.log('📋 知识库配置\n')
+  const info = await request(`/datasets/${DIFY_DATASET_ID}`)
+
+  const rows = [
+    ['名称', info?.name],
+    ['索引方式', info?.indexing_technique],
+    ['权限', info?.permission],
+    ['embedding 供应商', info?.embedding_model_provider],
+    ['embedding 模型', info?.embedding_model],
+    ['文档数', info?.document_count],
+    ['总分段数', info?.word_count != null ? `${info.word_count} 字` : undefined],
+    ['检索方式', info?.retrieval_model_dict?.search_method],
+    ['重排序', info?.retrieval_model_dict?.reranking_enable ? '已开启' : '未开启'],
+    ['Top K', info?.retrieval_model_dict?.top_k],
+    ['分数阈值', info?.retrieval_model_dict?.score_threshold_enabled ? info.retrieval_model_dict.score_threshold : '未启用'],
+  ]
+  rows.forEach(([k, v]) => {
+    if (v !== undefined && v !== null) console.log(`   ${k.padEnd(16)} ${v}`)
+  })
+
+  const model = String(info?.embedding_model || '')
+  console.log('\n═══ 建议 ═══')
+  if (/multimodal/i.test(model)) {
+    console.log(`   ⚠️ 当前用的是多模态向量模型「${model}」。`)
+    console.log('      它面向图文对齐训练，对中文技术文本的语义区分度不足，')
+    console.log('      容易造成「分数集中在窄区间、原句也召回不到自己」。')
+    console.log('      建议在知识库设置中改用纯文本向量模型，如 text-embedding-v3（通义）')
+    console.log('      或 bge-m3，然后重新索引。')
+  } else if (!info?.retrieval_model_dict?.reranking_enable) {
+    console.log('   向量模型看起来正常，但未开启重排序（Rerank）。')
+    console.log('   开启重排序通常能明显提升中文技术文档的召回准确度。')
+  } else {
+    console.log('   ✅ 向量模型与重排序配置看起来正常')
+  }
+}
 async function retrieveFromDataset(query, { topK = 5 } = {}) {
   const res = await request(`/datasets/${DIFY_DATASET_ID}/retrieve`, {
     method: 'POST',
@@ -525,6 +563,15 @@ async function verifyIndexing(batches, { maxWaitMs = 300_000, cycleMs = 10_000 }
 // ────────────────────────────── 主流程 ──────────────────────────────
 
 async function main() {
+  if (SHOW_DATASET) {
+    if (!HAS_CREDENTIALS) {
+      console.error('❌ --dataset 需要 DIFY_API_KEY / DIFY_DATASET_ID')
+      process.exit(1)
+    }
+    await showDatasetInfo()
+    return { created: 0, updated: 0, failed: [], pruned: 0, bytes: 0 }
+  }
+
   if (RETRIEVE !== null || INSPECT !== null || PROBE) {
     if (!HAS_CREDENTIALS) {
       console.error('❌ --retrieve / --inspect / --probe 需要 DIFY_API_KEY / DIFY_DATASET_ID')

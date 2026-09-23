@@ -42,6 +42,11 @@ on:
         required: false
         default: ''
         type: string
+      dataset:
+        description: '打印知识库配置（embedding 模型 / 索引方式）'
+        required: true
+        default: false
+        type: boolean
 
   # 文档变更后自动增量同步（确认稳定后取消注释即可启用）
   # push:
@@ -100,6 +105,12 @@ jobs:
             echo ""
             echo "── 现状 ──"
             node scripts/sync-to-dify.mjs "--inspect=${{ inputs.inspect }}"
+            exit 0
+          fi
+
+          if [ "${{ inputs.dataset }}" = "true" ]; then
+            echo "📋 知识库配置"
+            node scripts/sync-to-dify.mjs --dataset
             exit 0
           fi
 
