@@ -52,6 +52,11 @@ on:
         required: true
         default: false
         type: boolean
+      audit:
+        description: '审核文档与分段状态（含全文索引 keywords）'
+        required: true
+        default: false
+        type: boolean
 
   # 文档变更后自动增量同步（确认稳定后取消注释即可启用）
   # push:
@@ -110,6 +115,12 @@ jobs:
             echo ""
             echo "── 现状 ──"
             node scripts/sync-to-dify.mjs "--inspect=${{ inputs.inspect }}"
+            exit 0
+          fi
+
+          if [ "${{ inputs.audit }}" = "true" ]; then
+            echo "🔎 审核文档与分段状态"
+            node scripts/sync-to-dify.mjs --audit
             exit 0
           fi
 

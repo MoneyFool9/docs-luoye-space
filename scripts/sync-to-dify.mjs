@@ -21,6 +21,7 @@
  *   node scripts/sync-to-dify.mjs --probe                  # 探测 Dify 分段行为（临时文档，用完即删）
  *   node scripts/sync-to-dify.mjs --retrieve="模块怎么定义"    # 直查知识库召回，隔离验证 chunk 质量
  *   node scripts/sync-to-dify.mjs --datasets                 # 列出账号下所有知识库，核对应用绑定的是哪个
+ *   node scripts/sync-to-dify.mjs --audit                    # 审核文档与分段状态（含全文索引）
  *
  * 环境变量（.env 或 CI secrets）：
  *   DIFY_API_KEY      知识库 API 密钥（dataset- 开头）
@@ -63,6 +64,8 @@ const INSPECT = argv.includes('--inspect') ? '' : (getOption('inspect') ?? null)
 const PROBE = hasFlag('probe')
 // --retrieve=<问题>：直查知识库召回，隔离验证 chunk 质量
 const RETRIEVE = getOption('retrieve')
+// --audit：审核文档与分段状态（含全文索引 keywords 是否生成）
+const AUDIT = hasFlag('audit')
 // --datasets：列出账号下所有知识库，确认应用绑定的究竟是哪一个
 const LIST_DATASETS = hasFlag('datasets')
 // --dataset：打印知识库配置（embedding 模型、索引方式、文档统计）
@@ -237,6 +240,67 @@ async function listDatasets() {
   }
 }
 
+/**
+ * 列出知识库全部分段，并统计各文档的索引状态。
+ *
+ * 用于确认文档是否处于可用状态，以及每个分段是否带 keywords（全文索引
+ * 依赖它）。分段没有 keywords 时，keyword_search 会召回 0 条。
+ */
+async function auditSegments() {
+  console.log('🔎 审核文档与分段状态\n')
+  const remote = await listAllDocuments()
+
+  let withKeywords = 0
+  let withoutKeywords = 0
+  const noKwSamples = []
+
+  for (const doc of remote.values()) {
+    let status = '?'
+    try {
+      const st = await request(`/datasets/${DIFY_DATASET_ID}/documents/${doc.id}/indexing-status`)
+      status = (st?.data ?? []).map((x) => x.indexing_status).join(',') || '?'
+    } catch {
+      /* 忽略单个文档的查询失败 */
+    }
+
+    const segs = await listSegments(doc.id)
+    const kwCount = segs.filter((s) => (s.keywords ?? []).length > 0).length
+    withKeywords += kwCount
+    withoutKeywords += segs.length - kwCount
+
+    console.log(`   ${doc.name}`)
+    console.log(`      索引状态 ${status} | 分段 ${segs.length} | 带 keywords ${kwCount}`)
+
+    if (kwCount === 0 && segs.length > 0 && noKwSamples.length < 2) {
+      noKwSamples.push(segs[0])
+    }
+    await sleep(THROTTLE_MS)
+  }
+
+  console.log('\n═══ 全文索引（keywords）统计 ═══')
+  console.log(`   带 keywords 的分段：${withKeywords}`)
+  console.log(`   不带 keywords 的分段：${withoutKeywords}`)
+
+  if (noKwSamples.length > 0) {
+    console.log('\n   无 keywords 的分段样例：')
+    noKwSamples.forEach((s) => {
+      console.log(`      content(${(s.content || '').length}字): ${(s.content || '').replace(/\s+/g, ' ').slice(0, 70)}`)
+      console.log(`      keywords: ${JSON.stringify(s.keywords ?? null)}`)
+      console.log('')
+    })
+  }
+
+  console.log('═══ 结论 ═══')
+  if (withKeywords === 0 && withoutKeywords > 0) {
+    console.log('   ⚠️ 所有分段都没有 keywords → keyword_search 会召回 0 条。')
+    console.log('      若 Dify 应用侧的检索方式含关键词检索（单独用或混合），')
+    console.log('      整个检索就可能返回空，表现为「知识库直查有结果、应用却答不出来」。')
+    console.log('      处理：把应用侧的检索方式改为「向量检索」或调整混合权重为纯向量。')
+  } else if (withKeywords > 0) {
+    console.log(`   ✅ ${withKeywords} 个分段带 keywords，全文索引正常`)
+  }
+}
+
 async function showDatasetInfo() {
   console.log('📋 知识库配置\n')
   const info = await request(`/datasets/${DIFY_DATASET_ID}`)
@@ -360,6 +424,7 @@ async function showDatasetInfo() {
     console.log('   ✅ 检索配置看起来正常')
   }
 }
+
 async function retrieveFromDataset(query, { topK = 5, mode = null, rerank = false } = {}) {
   const body = { query }
   if (mode) {
@@ -731,6 +796,15 @@ async function main() {
       process.exit(1)
     }
     await listDatasets()
+    return { created: 0, updated: 0, failed: [], pruned: 0, bytes: 0 }
+  }
+
+  if (AUDIT) {
+    if (!HAS_CREDENTIALS) {
+      console.error('❌ --audit 需要 DIFY_API_KEY / DIFY_DATASET_ID')
+      process.exit(1)
+    }
+    await auditSegments()
     return { created: 0, updated: 0, failed: [], pruned: 0, bytes: 0 }
   }
 
