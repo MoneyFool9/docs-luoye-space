@@ -72,6 +72,69 @@ export function stripObsidianNoise(markdown) {
 }
 
 /**
+ * 把段落合并成与「章节」对齐的粗块。
+ *
+ * 必须从输入文本侧动手的原因（已用 --probe 实测）：Dify 严格按 separator
+ * 切分且不合并相邻块，max_tokens 只是「超长才强切」的上限，不是合并目标。
+ * 所以传入 process_rule 并不能把碎段落合并起来，只能减少文本里 separator 的出现次数。
+ *
+ * 做法：以标题为边界，把同一标题下的段落之间的空行去掉。
+ * 这样 separator（\n\n）只出现在章节之间，每个 chunk 就是一个完整章节。
+ * 代码块内的空行完整保留，不会破坏缩进与可读性。
+ */
+export function coarsenForChunking(markdown, { maxHeadingLevel = 3 } = {}) {
+  const lines = markdown.split('\n')
+  const isFence = (t) => /^(`{3,}|~{3,})/.test(t)
+  const headingLevel = (t) => {
+    const m = t.match(/^(#{1,6})\s/)
+    return m ? m[1].length : 0
+  }
+
+  // 1) 先按标题切成章节（代码块内的 # 开头行不算标题）
+  const sections = []
+  let cur = []
+  let inFence = false
+
+  for (const line of lines) {
+    const t = line.trim()
+    if (isFence(t)) {
+      inFence = !inFence
+      cur.push(line)
+      continue
+    }
+    const level = inFence ? 0 : headingLevel(t)
+    if (level > 0 && level <= maxHeadingLevel) {
+      if (cur.some((l) => l.trim())) sections.push(cur)
+      cur = [line]
+      continue
+    }
+    cur.push(line)
+  }
+  if (cur.some((l) => l.trim())) sections.push(cur)
+
+  // 2) 删掉章节内部的空行（代码块内的保留），使 separator 只落在章节边界
+  const compacted = sections
+    .map((section) => {
+      const kept = []
+      let fence = false
+      for (const line of section) {
+        const t = line.trim()
+        if (isFence(t)) {
+          fence = !fence
+          kept.push(line)
+          continue
+        }
+        if (!fence && !t) continue // 章节内空行：删除
+        kept.push(line)
+      }
+      return kept.join('\n').trim()
+    })
+    .filter(Boolean)
+
+  return compacted.join('\n\n')
+}
+
+/**
  * 分片模式下挑选一个「入口文件」，用于 AI 回答里的引用跳转。
  * 优先级：readme/index > 与目录同名 > 名字包含目录名 > 字典序第一个
  */
@@ -110,7 +173,7 @@ export function buildShardDocuments(sources) {
     .map(([key, items]) => {
       if (items.length === 1) {
         const s = items[0]
-        return { name: s.rel, text: s.text, entry: `docs/${s.rel}`, count: 1 }
+        return { name: s.rel, text: coarsenForChunking(s.text), entry: `docs/${s.rel}`, count: 1 }
       }
 
       const title = path.basename(key)
@@ -123,9 +186,12 @@ export function buildShardDocuments(sources) {
         })
         .join('\n\n') // 不再插 `---`：它自己会成为一个无信息量的 chunk
 
+      const assembled = `# ${title} 系列笔记\n\n> 本文档由 ${items.length} 篇相关笔记合并而成，属于同一主题系列。\n\n${body}`
+
       return {
         name: `${key}.md`,
-        text: `# ${title} 系列笔记\n\n> 本文档由 ${items.length} 篇相关笔记合并而成，属于同一主题系列。\n\n${body}`,
+        // 组装后再粗化：让 chunk 与章节对齐，避免检索命中碎行
+        text: coarsenForChunking(assembled),
         entry: `docs/${pickEntryFile(key, items.map((s) => s.rel))}`,
         count: items.length,
       }
