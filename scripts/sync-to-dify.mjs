@@ -16,6 +16,8 @@
  *   node scripts/sync-to-dify.mjs --changed-since=HEAD~1   # 只同步改动过的文件
  *   node scripts/sync-to-dify.mjs --prune                  # 删除远端多余文档
  *   node scripts/sync-to-dify.mjs --limit=3                # 只处理前 N 篇（冒烟测试）
+ *   node scripts/sync-to-dify.mjs --inspect                # 导出分段明细，诊断检索质量
+ *   node scripts/sync-to-dify.mjs --inspect=NestJS         # 只看名称含 NestJS 的文档
  *
  * 环境变量（.env 或 CI secrets）：
  *   DIFY_API_KEY      知识库 API 密钥（dataset- 开头）
@@ -52,6 +54,8 @@ const PRUNE = hasFlag('prune')
 const MERGE = !hasFlag('no-merge')
 const CHANGED_SINCE = getOption('changed-since')
 const LIMIT = getOption('limit') ? Number(getOption('limit')) : null
+// --inspect[=关键词]：不写入，而是导出知识库文档的分段明细，用于诊断检索质量
+const INSPECT = argv.includes('--inspect') ? '' : (getOption('inspect') ?? null)
 const THROTTLE_MS = Number(process.env.DIFY_THROTTLE_MS || 6500)
 const PAGE_SIZE = 100
 const REQUEST_TIMEOUT_MS = 120_000
@@ -144,6 +148,83 @@ const updateByText = (documentId, name, text) =>
 
 const deleteDocument = (documentId) =>
   request(`/datasets/${DIFY_DATASET_ID}/documents/${documentId}`, { method: 'DELETE' })
+
+/** 列出某文档的全部分段（用于诊断 Dify 实际切成了什么） */
+async function listSegments(documentId) {
+  const all = []
+  let page = 1
+  for (;;) {
+    const data = await request(
+      `/datasets/${DIFY_DATASET_ID}/documents/${documentId}/segments?page=${page}&limit=100`
+    )
+    const items = data?.data ?? []
+    all.push(...items)
+    if (!data?.has_more || items.length === 0) break
+    page += 1
+    if (page > 100) break
+    await sleep(THROTTLE_MS)
+  }
+  return all
+}
+
+/**
+ * 诊断模式：导出分段明细，回答「Dify 到底把文档切成了什么」
+ * 分段过碎会让检索只能命中零碎行，是「命中片段却答不出来」的常见原因。
+ */
+async function inspectSegments(keyword) {
+  console.log('🔬 诊断知识库分段\n')
+  const remote = await listAllDocuments()
+
+  const targets = [...remote.values()].filter(
+    (d) => !keyword || d.name.toLowerCase().includes(keyword.toLowerCase())
+  )
+  if (targets.length === 0) {
+    console.log(`未找到名称包含「${keyword}」的文档。现有文档：`)
+    ;[...remote.keys()].forEach((n) => console.log(`   - ${n}`))
+    return
+  }
+
+  const buckets = { '<50': 0, '50-200': 0, '200-500': 0, '500-1000': 0, '>1000': 0 }
+
+  for (const doc of targets) {
+    const segs = await listSegments(doc.id)
+    const lens = segs.map((s) => (s.content || '').length).sort((a, b) => a - b)
+    const sum = lens.reduce((a, b) => a + b, 0)
+    const avg = lens.length ? Math.round(sum / lens.length) : 0
+
+    console.log(`\n═══ ${doc.name} ═══`)
+    console.log(`   分段数 ${segs.length} | 总字数 ${sum} | 平均 ${avg} 字 | 最短 ${lens[0] ?? 0} | 最长 ${lens.at(-1) ?? 0}`)
+
+    for (const s of segs) {
+      const n = (s.content || '').length
+      if (n < 50) buckets['<50']++
+      else if (n < 200) buckets['50-200']++
+      else if (n < 500) buckets['200-500']++
+      else if (n < 1000) buckets['500-1000']++
+      else buckets['>1000']++
+    }
+
+    // 最长的 3 段与最短的 5 段，看清分布
+    const sorted = [...segs].sort((a, b) => (b.content || '').length - (a.content || '').length)
+    console.log('   ── 最长的 3 段 ──')
+    sorted.slice(0, 3).forEach((s) =>
+      console.log(`      [${(s.content || '').length}字] ${(s.content || '').replace(/\s+/g, ' ').slice(0, 95)}`)
+    )
+    console.log('   ── 最短的 5 段 ──')
+    sorted.slice(-5).forEach((s) =>
+      console.log(`      [${(s.content || '').length}字] ${(s.content || '').replace(/\s+/g, ' ').slice(0, 95)}`)
+    )
+    await sleep(THROTTLE_MS)
+  }
+
+  const total = Object.values(buckets).reduce((a, b) => a + b, 0)
+  console.log('\n═══ 分段长度分布 ═══')
+  Object.entries(buckets).forEach(([k, v]) => {
+    const pct = total ? ((v / total) * 100).toFixed(0) : 0
+    const bar = '█'.repeat(Math.round(pct / 3))
+    console.log(`   ${k.padEnd(9)} ${String(v).padStart(5)} 段  ${String(pct).padStart(3)}%  ${bar}`)
+  })
+}
 
 // ────────────────────────────── 文档准备 ──────────────────────────────
 
@@ -239,6 +320,14 @@ async function verifyIndexing(batches, { maxWaitMs = 300_000, cycleMs = 10_000 }
 // ────────────────────────────── 主流程 ──────────────────────────────
 
 async function main() {
+  if (INSPECT !== null) {
+    if (!HAS_CREDENTIALS) {
+      console.error('❌ --inspect 需要 DIFY_API_KEY / DIFY_DATASET_ID')
+      process.exit(1)
+    }
+    return inspectSegments(INSPECT)
+  }
+
   const sources = await collectSourceFiles()
   // 分片规则与构建时映射表共用 scripts/lib/dify-shard.mjs，避免两处逻辑漂移
   const documents = MERGE
