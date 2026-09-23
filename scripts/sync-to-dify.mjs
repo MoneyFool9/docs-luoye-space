@@ -366,12 +366,11 @@ async function main() {
   // 核验索引状态
   if (!DRY_RUN && result.touched.length > 0) {
     console.log(`\n🔎 核验 ${result.touched.length} 篇文档的索引状态（最长等待 5 分钟）…`)
-    const verified = await verifyIndexing(result.touched.map(([id]) => id))
-    const byId = new Map(result.touched)
+    const verified = await verifyIndexing(result.touched)
     const bad = [...verified].filter(([, state]) => state !== 'completed')
     if (bad.length > 0) {
       console.log(`   ⚠️  ${bad.length} 篇索引异常：`)
-      bad.forEach(([id, state]) => console.log(`      - ${byId.get(id)}: ${state}`))
+      bad.forEach(([batch, state]) => console.log(`      - ${new Map(result.touched).get(batch)}: ${state}`))
     } else {
       console.log('   ✅ 全部索引完成')
     }
