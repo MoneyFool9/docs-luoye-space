@@ -274,11 +274,20 @@ async function main() {
   }
 
   const result = { created: 0, updated: 0, failed: [], pruned: 0, touched: [], bytes: 0 }
-  const localNames = new Set()
+  const localNames = new Set(limited.map((d) => d.name))
+
+  // 预演时把「远端有、本地没有」的文档列出来，让 --prune 的后果可见
+  if (DRY_RUN && HAS_CREDENTIALS) {
+    const remoteOnly = [...remote.values()].filter((d) => !localNames.has(d.name))
+    if (remoteOnly.length > 0) {
+      console.log(`🔎 远端有 ${remoteOnly.length} 篇本地不存在的文档：`)
+      remoteOnly.forEach((d) => console.log(`      - ${d.name}`))
+      console.log('      （--prune 会删除这些；不传则保留，可能与前文分片并存造成重复）\n')
+    }
+  }
 
   for (let i = 0; i < limited.length; i++) {
     const doc = limited[i]
-    localNames.add(doc.name)
     const existing = remote.get(doc.name)
     const label = `[${i + 1}/${limited.length}] ${doc.name}`
     const sizeKb = (Buffer.byteLength(doc.text) / 1024).toFixed(1)
