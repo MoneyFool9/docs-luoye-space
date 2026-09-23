@@ -19,6 +19,7 @@
  *   node scripts/sync-to-dify.mjs --inspect                # 导出分段明细，诊断检索质量
  *   node scripts/sync-to-dify.mjs --inspect=NestJS         # 只看名称含 NestJS 的文档
  *   node scripts/sync-to-dify.mjs --probe                  # 探测 Dify 分段行为（临时文档，用完即删）
+ *   node scripts/sync-to-dify.mjs --retrieve="模块怎么定义"    # 直查知识库召回，隔离验证 chunk 质量
  *
  * 环境变量（.env 或 CI secrets）：
  *   DIFY_API_KEY      知识库 API 密钥（dataset- 开头）
@@ -59,6 +60,8 @@ const LIMIT = getOption('limit') ? Number(getOption('limit')) : null
 const INSPECT = argv.includes('--inspect') ? '' : (getOption('inspect') ?? null)
 // --probe：用临时文档探测 Dify 的分段行为（用完即删）
 const PROBE = hasFlag('probe')
+// --retrieve=<问题>：直查知识库召回，隔离验证 chunk 质量
+const RETRIEVE = getOption('retrieve')
 const THROTTLE_MS = Number(process.env.DIFY_THROTTLE_MS || 6500)
 // Dify 默认把每个空行段落切成独立 chunk，导致命中片段过碎（实测平均仅 84 字）。
 // 改用 custom 分段规则，让相邻段落合并且到上限，保证每个 chunk 自带完整上下文。
@@ -186,6 +189,55 @@ const updateByText = (documentId, name, text) =>
 
 const deleteDocument = (documentId) =>
   request(`/datasets/${DIFY_DATASET_ID}/documents/${documentId}`, { method: 'DELETE' })
+
+/**
+ * 直接检索知识库（用 App Token 做不到，必须用 Dataset API Key）。
+ *
+ * 用途：把「知识库本身召回得好不好」与「应用侧配置（问题优化 / 重排序 /
+ * Top K）」分离开。若这里能准确召回目标 chunk、而线上问答仍不稳定，
+ * 那问题就在应用配置而不在知识库内容。
+ */
+async function retrieveFromDataset(query, { topK = 5 } = {}) {
+  const res = await request(`/datasets/${DIFY_DATASET_ID}/retrieve`, {
+    method: 'POST',
+    body: {
+      query,
+      retrieval_model: {
+        search_method: 'semantic_search',
+        reranking_enable: false,
+        top_k: topK,
+        score_threshold_enabled: false,
+      },
+    },
+  })
+  return res?.records ?? []
+}
+
+async function inspectRetrieval(query) {
+  console.log(`🔍 直接检索知识库：「${query}」\n`)
+  const records = await retrieveFromDataset(query)
+  if (records.length === 0) {
+    console.log('   ⚠️ 未召回任何分段')
+    return
+  }
+  records.forEach((r, i) => {
+    const head = (r.segment?.content || '').match(/^【([^】]+)】/)?.[1] ?? '(无标题路径)'
+    console.log(`── #${i + 1} score=${(r.score ?? 0).toFixed(4)} ──`)
+    console.log(`   路径：${head}`)
+    console.log(`   内容：${(r.segment?.content || '').replace(/\s+/g, ' ').slice(0, 170)}`)
+    console.log('')
+  })
+
+  const top1 = records[0]
+  console.log('═══ 结论 ═══')
+  console.log(`   Top1 分数：${(top1.score ?? 0).toFixed(4)}`)
+  const spread = (records[0].score ?? 0) - (records.at(-1)?.score ?? 0)
+  console.log(`   首末分差：${spread.toFixed(4)}`)
+  if ((top1.score ?? 0) < 0.4) {
+    console.log('   ⚠️ Top1 分数偏低，向量模型对中文的区分度可能不足')
+    console.log('      可在 Dify 知识库设置里更换 embedding 模型，或开启重排序（Rerank）')
+  }
+}
 
 /** 列出某文档的全部分段（用于诊断 Dify 实际切成了什么） */
 async function listSegments(documentId) {
@@ -473,13 +525,14 @@ async function verifyIndexing(batches, { maxWaitMs = 300_000, cycleMs = 10_000 }
 // ────────────────────────────── 主流程 ──────────────────────────────
 
 async function main() {
-  if (INSPECT !== null || PROBE) {
+  if (RETRIEVE !== null || INSPECT !== null || PROBE) {
     if (!HAS_CREDENTIALS) {
-      console.error('❌ --inspect / --probe 需要 DIFY_API_KEY / DIFY_DATASET_ID')
+      console.error('❌ --retrieve / --inspect / --probe 需要 DIFY_API_KEY / DIFY_DATASET_ID')
       process.exit(1)
     }
     if (PROBE) await probeSegmentation()
     if (INSPECT !== null) await inspectSegments(INSPECT)
+    if (RETRIEVE !== null) await inspectRetrieval(RETRIEVE)
     return { created: 0, updated: 0, failed: [], pruned: 0, bytes: 0 } // 诊断模式不写入正文
   }
 
