@@ -665,7 +665,73 @@ async function waitForDocument(documentId, { maxWaitMs = INDEX_WAIT_MS, cycleMs 
  */
 function isRateLimited(errorText) {
   if (!errorText) return false
-  return /429|Throttling|RateQuota|rate limit/i.test(errorText)
+  return /429|Throttling|RateQuota|rate limit|no valid session/i.test(errorText)
+}
+
+/**
+ * 提交一篇文档并等它索引完成，遇限流则退避重试。
+ *
+ * 为什么要重试：单篇文档会被切成上百个分段，Dify 并发调用 embedding 接口，
+ * 很容易撞上供应商的速率限制（实测阿里云百炼返回 429 Throttling.RateQuota）。
+ * 这类失败是瞬时的——退避等待后再触发一次索引通常就能过。
+ *
+ * @param {(documentId: string|null) => Promise<{documentId: string|null, res: any}>} submit
+ *        提交函数，参数为上一次拿到的文档 ID（首次为 null）。
+ *        文档处于 error 状态时无法 update，实现方需在此处重建。
+ */
+async function indexWithRetry(submit) {
+  let lastError = null
+  let documentId = null
+
+  for (let attempt = 1; attempt <= LIMIT_RETRIES; attempt++) {
+    process.stdout.write(attempt === 1 ? '        索引中…' : `        重试第 ${attempt} 次，索引中…`)
+
+    const submitted = await submit(documentId)
+    documentId = submitted?.documentId ?? documentId
+    if (!documentId) {
+      process.stdout.write(' 无法提交\n')
+      return { ok: false, error: '提交后未获得文档 ID', res: submitted?.res }
+    }
+
+    const { state, error } = await waitForDocument(documentId)
+
+    if (state === 'completed') {
+      process.stdout.write(' 完成\n')
+      return { ok: true, documentId, res: submitted?.res }
+    }
+
+    if (state === 'timeout') {
+      process.stdout.write(' 超时\n')
+      console.log('        索引仍在后台进行，可稍后用 --audit 复查')
+      return { ok: true, documentId, res: submitted?.res, timedOut: true }
+    }
+
+    // state === 'error'
+    lastError = error
+    const limited = isRateLimited(error)
+    const canRetry = limited && attempt < LIMIT_RETRIES
+    process.stdout.write(` 失败${canRetry ? '（将重试）' : ''}\n`)
+    console.log(
+      `        ❗ ${limited ? 'embedding 供应商限流' : '索引失败'}：${(error || '(无详情)').slice(0, 200)}`
+    )
+
+    if (!canRetry) break
+
+    const waitMs = RETRY_BASE_MS * attempt
+    console.log(`        ⏳ 等待 ${Math.round(waitMs / 1000)}s 后重试（限流是瞬时的）…`)
+    await sleep(waitMs)
+    // 重试前把损坏的文档删掉，否则 update 仍会报 Document is not available
+    if (documentId) {
+      try {
+        await deleteDocument(documentId)
+        documentId = null
+      } catch {
+        /* 删除失败就让 submit 自行处理 */
+      }
+    }
+  }
+
+  return { ok: false, error: lastError }
 }
 
 // ────────────────────────────── 文档准备 ──────────────────────────────
