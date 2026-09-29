@@ -1170,6 +1170,33 @@ async function analyzeStructure(keyword) {
   }
 }
 
+/**
+ * 判断分段是否为「真断裂」。
+ *
+ * 为什么不能只数围栏：Dify 在索引前会把开围栏 ``` 去掉、只留语言标记
+ * （如 `typescript`），于是内容完整的分段围栏数也是奇数——实测 36 个
+ * 「奇围栏」里有完整示例（花括号成对、代码完整）。光看围栏数会大幅误报。
+ *
+ * 真正的断裂看两点：
+ *   1. 以语言标记/裸代码行开头（丢了代码块开头的结构）
+ *   2. 花括号或圆括号不成对（代码被从中截开）
+ */
+function isTrulyBroken(content) {
+  const c = content || ''
+  if (!c.trim()) return false
+
+  const afterLang = c.replace(/^\s*[a-z][a-z0-9+#-]*\s*\n/i, '')
+  const open = (afterLang.match(/[{[(]/g) || []).length
+  const close = (afterLang.match(/[}\])]/g) || []).length
+  const unbalanced = open !== close
+
+  const endsWithFence = /`{3,}\s*$/.test(c.trim())
+  const startsWithFence = /^\s*`{3,}/.test(c)
+
+  if (unbalanced && (endsWithFence || !startsWithFence)) return true
+  return false
+}
+
 // --fences[=关键词]：诊断 Dify 对代码围栏的处理（围栏剥离 / 断裂）
 const FENCES = argv.includes('--fences') ? '' : (getOption('fences') ?? null)
 
@@ -1194,7 +1221,7 @@ async function inspectFences(keyword) {
   let even = 0
   const samples = { startNoFence: [], fenceOnly: [] }
   const oddFull = []
-  const oddStats = { braceBalanced: 0, total: 0 }
+  const oddStats = { total: 0, broken: 0, strippedOnly: 0 }
 
   for (const doc of targets) {
     const segs = await listSegments(doc.id)
@@ -1210,15 +1237,13 @@ async function inspectFences(keyword) {
         }
       } else if (n % 2 === 1) {
         odd++
-        // 判定奇围栏分段的内容是否完整：剥离开头的语言标记后，
-        // 看花括号是否成对、是否以围栏收尾。内容完整则只是开围栏被剥离，
-        // 不影响检索；内容残缺才是真断裂。
-        const withoutLang = c.replace(/^\s*[a-z]+\s*\n/, '')
-        const open = (withoutLang.match(/[{[(]/g) || []).length
-        const close = (withoutLang.match(/[}\])]/g) || []).length
+        // 判定奇围栏分段是否为真断裂。Dify 会把开围栏 ``` 剥离、只留语言
+        // 标记，所以围栏数为奇并不等于内容被切断；要看花括号是否成对。
+        const broken = isTrulyBroken(c)
         oddStats.total++
-        if (open === close && /`{3,}\s*$/.test(c.trim())) oddStats.braceBalanced++
-        if (oddFull.length < 2) oddFull.push({ doc: doc.name, len: c.length, raw: c })
+        if (broken) oddStats.broken++
+        else oddStats.strippedOnly++
+        if (broken && oddFull.length < 2) oddFull.push({ doc: doc.name, len: c.length, raw: c })
       } else {
         even++
       }
@@ -1238,14 +1263,12 @@ async function inspectFences(keyword) {
   }
 
   if (oddStats.total > 0) {
-    const pct = ((oddStats.braceBalanced / oddStats.total) * 100).toFixed(0)
-    console.log('\n═══ 奇围栏分段的内容完整性 ═══')
-    console.log(`   花括号成对且以围栏收尾：${oddStats.braceBalanced}/${oddStats.total}  (${pct}%)`)
-    if (oddStats.braceBalanced === oddStats.total) {
-      console.log('   → 内容完整，仅仅是开围栏被剥离（不影响检索）')
-    } else {
-      console.log('   → 部分分段内容残缺（真断裂，影响检索）')
-    }
+    const bp = ((oddStats.broken / oddStats.total) * 100).toFixed(0)
+    console.log('\n═══ 奇围栏分段的真相 ═══')
+    console.log(
+      `   仅开围栏被剥离  ${oddStats.strippedOnly}/${oddStats.total}  (${100 - bp}%)  — 内容完整，不影响检索`
+    )
+    console.log(`   内容真被截断    ${oddStats.broken}/${oddStats.total}  (${bp}%)  — 才是真问题`)
   }
 
   if (oddFull.length > 0) {
