@@ -899,13 +899,17 @@ async function probeSegmentation() {
 async function analyzeStructure(keyword) {
   console.log('🧱 知识库结构分析\n')
   const remote = await listAllDocuments()
+  // 关键词为 all / * / 空 → 不筛选，分析全部文档
+  const isAll = !keyword || keyword === 'all' || keyword === '*'
   const targets = [...remote.values()].filter(
-    (d) => !keyword || d.name.toLowerCase().includes(keyword.toLowerCase())
+    (d) => isAll || d.name.toLowerCase().includes(keyword.toLowerCase())
   )
   if (targets.length === 0) {
-    console.log(`未找到名称包含「${keyword}」的文档。`)
+    console.log(`未找到名称包含「${keyword}」的文档。现有文档：`)
+    ;[...remote.keys()].forEach((n) => console.log(`   - ${n}`))
     return
   }
+  console.log(`待分析 ${targets.length} 篇文档${isAll ? '（全部）' : `（名称含「${keyword}」）`}\n`)
 
   let total = 0
   let brokenFence = 0
