@@ -1193,6 +1193,8 @@ async function inspectFences(keyword) {
   let odd = 0
   let even = 0
   const samples = { startNoFence: [], fenceOnly: [] }
+  const oddFull = []
+  const oddStats = { braceBalanced: 0, total: 0 }
 
   for (const doc of targets) {
     const segs = await listSegments(doc.id)
@@ -1208,6 +1210,15 @@ async function inspectFences(keyword) {
         }
       } else if (n % 2 === 1) {
         odd++
+        // 判定奇围栏分段的内容是否完整：剥离开头的语言标记后，
+        // 看花括号是否成对、是否以围栏收尾。内容完整则只是开围栏被剥离，
+        // 不影响检索；内容残缺才是真断裂。
+        const withoutLang = c.replace(/^\s*[a-z]+\s*\n/, '')
+        const open = (withoutLang.match(/[{[(]/g) || []).length
+        const close = (withoutLang.match(/[}\])]/g) || []).length
+        oddStats.total++
+        if (open === close && /`{3,}\s*$/.test(c.trim())) oddStats.braceBalanced++
+        if (oddFull.length < 2) oddFull.push({ doc: doc.name, len: c.length, raw: c })
       } else {
         even++
       }
@@ -1224,6 +1235,26 @@ async function inspectFences(keyword) {
   if (samples.startNoFence.length) {
     console.log('\n   开头像语言标记但无围栏的分段：')
     samples.startNoFence.forEach((s) => console.log(`      ${s.doc}\n        ${s.head}`))
+  }
+
+  if (oddStats.total > 0) {
+    const pct = ((oddStats.braceBalanced / oddStats.total) * 100).toFixed(0)
+    console.log('\n═══ 奇围栏分段的内容完整性 ═══')
+    console.log(`   花括号成对且以围栏收尾：${oddStats.braceBalanced}/${oddStats.total}  (${pct}%)`)
+    if (oddStats.braceBalanced === oddStats.total) {
+      console.log('   → 内容完整，仅仅是开围栏被剥离（不影响检索）')
+    } else {
+      console.log('   → 部分分段内容残缺（真断裂，影响检索）')
+    }
+  }
+
+  if (oddFull.length > 0) {
+    console.log('\n═══ 奇围栏分段完整原文（前 1 个）═══')
+    const s = oddFull[0]
+    console.log(`   ${s.doc}  (${s.len} 字)`)
+    console.log('   ┌────')
+    s.raw.split('\n').forEach((l) => console.log(`   │ ${l}`))
+    console.log('   └────')
   }
 
   console.log('\n═══ 结论 ═══')
