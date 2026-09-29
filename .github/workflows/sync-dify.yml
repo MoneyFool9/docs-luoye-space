@@ -57,6 +57,11 @@ on:
         required: true
         default: false
         type: boolean
+      structure:
+        description: '分析分段结构（代码是否被截断），可填文档名关键词'
+        required: false
+        default: ''
+        type: string
 
   # 文档变更后自动增量同步（确认稳定后取消注释即可启用）
   # push:
@@ -115,6 +120,12 @@ jobs:
             echo ""
             echo "── 现状 ──"
             node scripts/sync-to-dify.mjs "--inspect=${{ inputs.inspect }}"
+            exit 0
+          fi
+
+          if [ -n "${{ inputs.structure }}" ]; then
+            echo "🧱 知识库结构分析"
+            node scripts/sync-to-dify.mjs "--structure=${{ inputs.structure }}"
             exit 0
           fi
 

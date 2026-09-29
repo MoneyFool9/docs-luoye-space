@@ -22,6 +22,8 @@
  *   node scripts/sync-to-dify.mjs --retrieve="模块怎么定义"    # 直查知识库召回，隔离验证 chunk 质量
  *   node scripts/sync-to-dify.mjs --datasets                 # 列出账号下所有知识库，核对应用绑定的是哪个
  *   node scripts/sync-to-dify.mjs --audit                    # 审核文档与分段状态（含全文索引）
+ *   node scripts/sync-to-dify.mjs --structure                # 分析分段结构（代码是否被截断）
+ *   node scripts/sync-to-dify.mjs --structure=nodejs         # 只看名称含 nodejs 的文档
  *
  * 环境变量（.env 或 CI secrets）：
  *   DIFY_API_KEY      知识库 API 密钥（dataset- 开头）
@@ -66,6 +68,8 @@ const PROBE = hasFlag('probe')
 const RETRIEVE = getOption('retrieve')
 // --audit：审核文档与分段状态（含全文索引 keywords 是否生成）
 const AUDIT = hasFlag('audit')
+// --structure[=关键词]：分析分段结构（代码是否被截断、是否脱离上下文）
+const STRUCTURE = argv.includes('--structure') ? '' : (getOption('structure') ?? null)
 // --datasets：列出账号下所有知识库，确认应用绑定的究竟是哪一个
 const LIST_DATASETS = hasFlag('datasets')
 // --dataset：打印知识库配置（embedding 模型、索引方式、文档统计）
@@ -885,6 +889,107 @@ async function probeSegmentation() {
   }
 }
 
+/**
+ * 结构分析：检查知识库分段的内部质量。
+ *
+ * 分段长度均看似正常，但内容可能已损坏：Dify 对超过 max_tokens 的章节会
+ * 硬切，而硬切不认识代码围栏，会把 ``` 从中切开——一段结尾是代码、下一段
+ * 开头是剩下的代码，两段都无法独立回答。这类问题只能逐段核对。
+ */
+async function analyzeStructure(keyword) {
+  console.log('🧱 知识库结构分析\n')
+  const remote = await listAllDocuments()
+  const targets = [...remote.values()].filter(
+    (d) => !keyword || d.name.toLowerCase().includes(keyword.toLowerCase())
+  )
+  if (targets.length === 0) {
+    console.log(`未找到名称包含「${keyword}」的文档。`)
+    return
+  }
+
+  let total = 0
+  let brokenFence = 0
+  let noHeading = 0
+  let codeOnly = 0
+  const worst = []
+  const perDoc = []
+
+  for (const doc of targets) {
+    const segs = await listSegments(doc.id)
+    let dBroken = 0
+    let dNoHead = 0
+
+    for (const s of segs) {
+      const c = s.content || ''
+      if (!c.trim()) continue
+      total++
+
+      // 围栏数为奇数 → 代码块被从中间截断
+      const fences = (c.match(/^\s*```/gm) || []).length
+      if (fences % 2 === 1) {
+        brokenFence++
+        dBroken++
+        worst.push({ doc: doc.name, len: c.length, head: c.replace(/\s+/g, ' ').slice(0, 70) })
+      }
+
+      // 不以标题开头 → 脱离了小节上下文（可能只是被切断的后半段）
+      const firstLine = c.split('\n').find((l) => l.trim()) || ''
+      if (!/^#{1,6}\s/.test(firstLine.trim()) && !/^【/.test(firstLine.trim())) dNoHead++
+
+      // 整段几乎都是代码（无标题、无中文说明）
+      const cn = (c.match(/[\u4e00-\u9fa5]/g) || []).length
+      if (cn < 10 && fences >= 2) codeOnly++
+    }
+
+    noHeading += dNoHead
+    perDoc.push({ name: doc.name, segs: segs.length, broken: dBroken, noHead: dNoHead })
+    await sleep(THROTTLE_MS)
+  }
+
+  // 逐文档表
+  console.log('文档名'.padEnd(44) + '分段 断码 无标题')
+  console.log('-'.repeat(70))
+  perDoc
+    .sort((a, b) => b.broken - a.broken || b.segs - a.segs)
+    .forEach((d) => {
+      const mark = d.broken > 0 ? ' ⚠️' : ''
+      console.log(
+        d.name.padEnd(42) +
+          String(d.segs).padStart(4) +
+          String(d.broken).padStart(5) +
+          String(d.noHead).padStart(7) +
+          mark
+      )
+    })
+
+  const pct = (x) => ((x / total) * 100).toFixed(1)
+  console.log('\n═══ 汇总 ═══')
+  console.log(`   分段总数              ${total}`)
+  console.log(`   代码围栏断裂          ${brokenFence}  (${pct(brokenFence)}%)  ← 半截代码，无法独立作答`)
+  console.log(`   不以标题开头          ${noHeading}  (${pct(noHeading)}%)  ← 脱离小节上下文`)
+  console.log(`   几乎纯代码无说明      ${codeOnly}  (${pct(codeOnly)}%)`)
+
+  if (worst.length > 0) {
+    console.log('\n═══ 断裂样例（前 6）═══')
+    worst.slice(0, 6).forEach((w) => {
+      console.log(`   [${w.len}字] ${w.doc}`)
+      console.log(`      ${w.head}`)
+    })
+  }
+
+  console.log('\n═══ 结论 ═══')
+  if (brokenFence / total > 0.1) {
+    console.log(`   ⚠️ ${pct(brokenFence)}% 的分段代码围栏不成对，说明章节内容超过了 max_tokens`)
+    console.log('      上限而被 Dify 硬切，且硬切不认代码块。')
+    console.log('      处理：把 DIFY_MAX_TOKENS 调到章节长度之上（如 2000），重同步；')
+    console.log('            或在源笔记里把过长章节拆成更小的 H3/H4 小节。')
+  } else if (brokenFence > 0) {
+    console.log(`   ℹ️ 有 ${brokenFence} 个分段代码被截断，比例不高但建议关注`)
+  } else {
+    console.log('   ✅ 分段结构良好，无代码截断')
+  }
+}
+
 // ────────────────────────────── 索引结果核验 ──────────────────────────────
 
 /**
@@ -933,6 +1038,15 @@ async function main() {
       process.exit(1)
     }
     await listDatasets()
+    return { created: 0, updated: 0, failed: [], pruned: 0, bytes: 0 }
+  }
+
+  if (STRUCTURE !== null) {
+    if (!HAS_CREDENTIALS) {
+      console.error('❌ --structure 需要 DIFY_API_KEY / DIFY_DATASET_ID')
+      process.exit(1)
+    }
+    await analyzeStructure(STRUCTURE)
     return { created: 0, updated: 0, failed: [], pruned: 0, bytes: 0 }
   }
 
