@@ -1252,8 +1252,7 @@ async function main() {
       result.bytes += Buffer.byteLength(doc.text)
 
       // 等这篇索引完成再提交下一篇，避开 embedding 供应商的速率限制
-      if (SERIAL_INDEX && documentId) {
-        process.stdout.write('        索引中…')
+      if (SERIAL_INDEX && documentId) {        process.stdout.write('        索引中…')
         const { state, error } = await waitForDocument(documentId)
         if (state === 'completed') {
           process.stdout.write(' 完成\n')
@@ -1273,25 +1272,68 @@ async function main() {
         }
       }
     } catch (error) {
-      // 远端已存在同名文档但列表未反映 → 退回更新
-      const isConflict = error.status === 409 || /already exists/i.test(error.message)
-      if (isConflict && HAS_CREDENTIALS) {
+      // 两种需要「删掉重建」的情形：
+      //  - 400 Document is not available：文档处于 error 状态时无法再 update
+      //  - 409 already exists：远端有同名文档但列表没反映
+      // 共同处理方式：删掉远端那份，改成新建
+      const needsRecreate =
+        /Document is not available/i.test(error.message) ||
+        error.status === 409 ||
+        /already exists/i.test(error.message)
+
+      if (needsRecreate && HAS_CREDENTIALS) {
         try {
           const refreshed = await listAllDocuments({ silent: true })
           const hit = refreshed.get(doc.name)
-          if (hit?.id) {
-            const res = await updateByText(hit.id, doc.name, doc.text)
+          const staleId = hit?.id ?? existing?.id
+
+          let targetId = null
+          if (error.status === 409 || /already exists/i.test(error.message)) {
+            // 同名已存在：优先更新，不删数据
+            if (staleId) {
+              await updateByText(staleId, doc.name, doc.text)
+              targetId = staleId
+              result.updated++
+              console.log(`${label}  ✅ 已更新（命中已存在文档）`)
+            }
+          } else if (staleId) {
+            // 文档已损坏（error 状态不能 update）→ 删除后重建
+            console.log(`${label}  ⚠️ 文档处于异常状态，改为删除后重建…`)
+            await deleteDocument(staleId)
+            await sleep(THROTTLE_MS)
+            const res = await createByText(doc.name, doc.text)
+            targetId = res?.document?.id ?? null
+            remote.set(doc.name, { id: targetId, name: doc.name })
             result.updated++
+            console.log(`${label}  ✅ 已重建  ${sizeKb} KB${mergedNote}`)
+          }
+
+          if (targetId) {
             result.bytes += Buffer.byteLength(doc.text)
-            if (res?.batch) result.touched.push([res.batch, doc.name])
-            console.log(`${label}  ✅ 已更新（重试命中已存在文档）`)
+            if (SERIAL_INDEX) {
+              process.stdout.write('        索引中…')
+              const { state, error: idxErr } = await waitForDocument(targetId)
+              if (state === 'completed') {
+                process.stdout.write(' 完成\n')
+              } else if (state === 'error') {
+                process.stdout.write(' 失败\n')
+                const limited = isRateLimited(idxErr)
+                console.log(
+                  `        ❗ ${limited ? 'embedding 供应商限流（429）' : '索引失败'}：${idxErr || '(无详情)'}`
+                )
+                result.failed.push({ name: doc.name, error: `索引失败：${idxErr || '未知'}` })
+              } else {
+                process.stdout.write(' 超时\n')
+              }
+            }
             await sleep(THROTTLE_MS)
             continue
           }
-        } catch {
-          /* 交给下面的失败分支处理 */
+        } catch (recreateErr) {
+          console.log(`${label}  ⚠️ 重建尝试失败：${recreateErr.message}`)
         }
       }
+
       result.failed.push({ name: doc.name, error: error.message })
       console.log(`${label}  ❌ 失败：${error.message}`)
     }
