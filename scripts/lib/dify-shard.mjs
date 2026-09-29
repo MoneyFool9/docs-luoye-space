@@ -152,13 +152,15 @@ export function splitIntoSections(markdown, { maxHeadingLevel = 3, minChars = 12
 /**
  * 单块字符上限。
  *
- * Dify 对超过 max_tokens 的块会硬切，而硬切不认代码围栏——实测有 17.6%
- * 的分段因此出现半截代码（一段以代码结尾、下一段以剩余代码开头，两段都
- * 无法独立作答）。所以必须由我们在安全位置预先切开，不劳 Dify 动手。
+ * 这个值需要与 Dify 的 max_tokens 配合：Dify 对超过 max_tokens 的块会硬切，
+ * 而硬切不认代码围栏——实测有 17.6% 的分段因此出现半截代码。所以由我们
+ * 在安全位置预先切开，上限要略低于 Dify 的阈值，避免它再动手。
  *
- * 实测 Dify 的硬切阈值为约 800 字符，这里取 700 留出余量。
+ * 取 2000 而非更小的值，是因为代码块的完整性比 chunk 粒度更重要：阈值
+ * 700 时全库有 156 个代码块（14.6%）会被切开，切成两半的代码两边都看不懂；
+ * 提到 2000 后只剩 6 个（0.6%）。
  */
-export const DEFAULT_CHUNK_CHARS = 700
+export const DEFAULT_CHUNK_CHARS = 2000
 
 /**
  * 把章节拆成「单元」，供装箱阶段使用。
