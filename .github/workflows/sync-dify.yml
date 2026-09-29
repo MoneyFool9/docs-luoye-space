@@ -62,6 +62,11 @@ on:
         required: false
         default: ''
         type: string
+      fences:
+        description: '诊断代码围栏处理（剥离/断裂），可填文档名关键词'
+        required: false
+        default: ''
+        type: string
 
   # 文档变更后自动增量同步（确认稳定后取消注释即可启用）
   # push:
@@ -120,6 +125,12 @@ jobs:
             echo ""
             echo "── 现状 ──"
             node scripts/sync-to-dify.mjs "--inspect=${{ inputs.inspect }}"
+            exit 0
+          fi
+
+          if [ -n "${{ inputs.fences }}" ]; then
+            echo "🧵 围栏统计诊断"
+            node scripts/sync-to-dify.mjs "--fences=${{ inputs.fences }}"
             exit 0
           fi
 
