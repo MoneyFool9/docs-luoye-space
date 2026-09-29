@@ -1170,7 +1170,69 @@ async function analyzeStructure(keyword) {
   }
 }
 
-// ────────────────────────────── 索引结果核验 ──────────────────────────────
+// --fences[=关键词]：诊断 Dify 对代码围栏的处理（围栏剥离 / 断裂）
+const FENCES = argv.includes('--fences') ? '' : (getOption('fences') ?? null)
+
+/**
+ * 围栏统计诊断：回答「Dify 到底对代码围栏做了什么」。
+ *
+ * 现象：本地构建零断裂，但 Dify 存储的 18.7% 分段围栏不成对，
+ * 且样例显示分段以 `typescript` 开头（语言标记还在）而以 ``` 结尾。
+ * 需要判定是 Dify 剥离了开围栏，还是切分位置恰好在围栏处。
+ * 做法：列出各文档中围栏数为奇/偶/零的分段数量与译文样例。
+ */
+async function inspectFences(keyword) {
+  console.log('🧵 围栏统计诊断\n')
+  const remote = await listAllDocuments()
+  const isAll = !keyword || keyword === 'all' || keyword === '*'
+  const targets = [...remote.values()].filter(
+    (d) => isAll || d.name.toLowerCase().includes(keyword.toLowerCase())
+  )
+
+  let zero = 0
+  let odd = 0
+  let even = 0
+  const samples = { startNoFence: [], fenceOnly: [] }
+
+  for (const doc of targets) {
+    const segs = await listSegments(doc.id)
+    for (const s of segs) {
+      const c = s.content || ''
+      if (!c.trim()) continue
+      const n = (c.match(/^\s*`{3,}/gm) || []).length
+      if (n === 0) {
+        zero++
+        // 无围栏但含代码特征 → 可能开围栏被剥离
+        if (/^[a-z]+\s*\n/.test(c) && /[{};]/.test(c) && samples.startNoFence.length < 3) {
+          samples.startNoFence.push({ doc: doc.name, head: c.slice(0, 90).replace(/\n/g, '⏎') })
+        }
+      } else if (n % 2 === 1) {
+        odd++
+      } else {
+        even++
+      }
+    }
+    await sleep(THROTTLE_MS)
+  }
+
+  const total = zero + odd + even
+  console.log(`   分段总数        ${total}`)
+  console.log(`   无围栏          ${zero}  (${((zero / total) * 100).toFixed(1)}%)`)
+  console.log(`   围栏为奇（断裂）  ${odd}  (${((odd / total) * 100).toFixed(1)}%)`)
+  console.log(`   围栏为偶（正常）  ${even}  (${((even / total) * 100).toFixed(1)}%)`)
+
+  if (samples.startNoFence.length) {
+    console.log('\n   开头像语言标记但无围栏的分段：')
+    samples.startNoFence.forEach((s) => console.log(`      ${s.doc}\n        ${s.head}`))
+  }
+
+  console.log('\n═══ 结论 ═══')
+  const stripped = zero / total > 0.5
+  if (stripped) {
+    console.log('   大量分段完全没有围栏 → Dify 在索引前会剥离 markdown 围栏，')
+    console.log('   本地围栏计数无法反映真实存储情况，本地零断裂与线上 18.7% 不矛盾。')
+  }
+}
 
 /**
  * 轮询索引状态。
@@ -1227,6 +1289,15 @@ async function main() {
       process.exit(1)
     }
     await analyzeStructure(STRUCTURE)
+    return { created: 0, updated: 0, failed: [], pruned: 0, bytes: 0 }
+  }
+
+  if (FENCES !== null) {
+    if (!HAS_CREDENTIALS) {
+      console.error('❌ --fences 需要 DIFY_API_KEY / DIFY_DATASET_ID')
+      process.exit(1)
+    }
+    await inspectFences(FENCES)
     return { created: 0, updated: 0, failed: [], pruned: 0, bytes: 0 }
   }
 
