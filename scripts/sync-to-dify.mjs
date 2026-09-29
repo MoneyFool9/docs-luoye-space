@@ -1295,10 +1295,11 @@ async function main() {
 
   for (let i = 0; i < limited.length; i++) {
     const doc = limited[i]
-    const existing = remote.get(doc.name)
     const label = `[${i + 1}/${limited.length}] ${doc.name}`
     const sizeKb = (Buffer.byteLength(doc.text) / 1024).toFixed(1)
     const mergedNote = doc.count > 1 ? `  (合并 ${doc.count} 篇)` : ''
+    // 用 let：文档损坏被删除后需要置空，否则重试会回退到已失效的 ID（404）
+    let existing = remote.get(doc.name)
 
     if (DRY_RUN) {
       console.log(`${label}  ${existing ? '→ 将更新' : '→ 将创建'}  ${sizeKb} KB${mergedNote}`)
@@ -1311,6 +1312,9 @@ async function main() {
      * 提交函数。documentId 为 null 或文档已损坏时走新建；否则更新。
      * 文档处于 error 状态时 Dify 会拒绝 update（400 Document is not available），
      * 所以这里先删掉损坏的那份再新建。
+     *
+     * 注意：重试时不能回退到最初列表里的 existing.id——那份可能已被删。
+     * 因此只信任调用方传入的 currentId，并在删除后清掉 existing。
      */
     let firstSubmit = true
     const submit = async (currentId) => {
@@ -1327,10 +1331,12 @@ async function main() {
         } catch (error) {
           const recoverable =
             /Document is not available/i.test(error.message) ||
+            /Document not found/i.test(error.message) ||
+            error.status === 404 ||
             error.status === 409 ||
             /already exists/i.test(error.message)
           if (!recoverable) throw error
-          // 损坏或状态异常 → 删掉后重建
+          // 损坏、已删除或状态异常 → 删掉后重建
           console.log(`${label}  ⚠️ 文档状态异常（${error.message.slice(0, 60)}），删除后重建…`)
           try {
             await deleteDocument(target)
@@ -1339,6 +1345,9 @@ async function main() {
           }
           await sleep(THROTTLE_MS)
           target = null
+          // 作废缓存的 existing，避免后续重试又拿到已删除的 ID
+          remote.delete(doc.name)
+          existing = null
         }
       }
 
