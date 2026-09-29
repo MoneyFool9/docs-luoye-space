@@ -260,7 +260,6 @@ async function listDatasets() {
 async function auditSegments() {
   console.log('🔎 审核文档与分段状态\n')
   const remote = await listAllDocuments()
-
   // 先看文档级状态：enabled=false 或 indexing_status 异常都会导致
   // 后续 update-by-text 报「Document is not available」
   console.log('═══ 文档级状态 ═══')
@@ -273,6 +272,20 @@ async function auditSegments() {
         `      enabled=${doc.enabled} indexing=${doc.indexing_status ?? '?'} status=${doc.status ?? '?'} display=${doc.display_status ?? '?'}\n` +
         `      word_count=${doc.word_count ?? '?'} tokens=${doc.tokens ?? '?'} segment_count=${doc.segment_count ?? '?'}`
     )
+    // Dify 会在文档级或分段级记录失败原因，这是定位 indexing=error 的关键
+    const docErr = doc.error ?? doc.indexing_error ?? null
+    if (docErr) console.log(`      ❗ 文档错误: ${String(docErr).slice(0, 300)}`)
+    try {
+      const st = await request(`/datasets/${DIFY_DATASET_ID}/documents/${doc.id}/indexing-status`)
+      const arr = st?.data ?? []
+      if (arr.length > 0) {
+        const sum = arr.map((x) => `${x.indexing_status}${x.error ? `(${String(x.error).slice(0, 80)})` : ''}`)
+        console.log(`      批次状态: ${sum.join(', ')}`)
+      }
+    } catch (e) {
+      console.log(`      （批次状态查询失败：${e.message.slice(0, 60)}）`)
+    }
+    await sleep(THROTTLE_MS)
   }
 
   let withKeywords = 0
