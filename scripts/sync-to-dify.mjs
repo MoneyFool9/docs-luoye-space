@@ -161,12 +161,19 @@ async function request(endpoint, { method = 'GET', body } = {}) {
 /** 分页拉取知识库全部文档，返回 name -> document 的映射 */
 async function listAllDocuments({ silent = false } = {}) {
   const byName = new Map()
+  const meta = { total: 0, enabled: 0, disabled: 0, statuses: new Set() }
   let page = 1
 
   for (;;) {
     const data = await request(`/datasets/${DIFY_DATASET_ID}/documents?page=${page}&limit=${PAGE_SIZE}`)
     const items = data?.data ?? []
     for (const doc of items) {
+      meta.total++
+      if (doc.enabled === false) meta.disabled++
+      else meta.enabled++
+      for (const s of [doc.indexing_status, doc.status, doc.display_status]) {
+        if (s) meta.statuses.add(s)
+      }
       // 同名时保留较早创建的那条，避免重复文档互相覆盖
       const prev = byName.get(doc.name)
       if (!prev || (doc.created_at ?? 0) < (prev.created_at ?? 0)) byName.set(doc.name, doc)
@@ -178,7 +185,7 @@ async function listAllDocuments({ silent = false } = {}) {
     if (!silent) await sleep(THROTTLE_MS)
   }
 
-  return byName
+  return Object.assign(byName, { meta })
 }
 
 const createByText = (name, text) =>
@@ -253,6 +260,20 @@ async function listDatasets() {
 async function auditSegments() {
   console.log('🔎 审核文档与分段状态\n')
   const remote = await listAllDocuments()
+
+  // 先看文档级状态：enabled=false 或 indexing_status 异常都会导致
+  // 后续 update-by-text 报「Document is not available」
+  console.log('═══ 文档级状态 ═══')
+  console.log(`   总数 ${remote.meta.total} | enabled ${remote.meta.enabled} | disabled ${remote.meta.disabled}`)
+  console.log(`   出现的状态值: ${[...remote.meta.statuses].join(', ') || '(无)'}`)
+  console.log('')
+  for (const doc of remote.values()) {
+    console.log(
+      `   ${doc.enabled === false ? '🚫' : '✓'} ${doc.name}\n` +
+        `      enabled=${doc.enabled} indexing=${doc.indexing_status ?? '?'} status=${doc.status ?? '?'} display=${doc.display_status ?? '?'}\n` +
+        `      word_count=${doc.word_count ?? '?'} tokens=${doc.tokens ?? '?'} segment_count=${doc.segment_count ?? '?'}`
+    )
+  }
 
   let withKeywords = 0
   let withoutKeywords = 0
