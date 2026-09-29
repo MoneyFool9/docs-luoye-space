@@ -150,19 +150,162 @@ export function splitIntoSections(markdown, { maxHeadingLevel = 3, minChars = 12
 }
 
 /**
- * 粗化：把章节用 CHUNK_MARKER 拼接，使每个 chunk 与章节对齐。
- * 代码块内的空行完整保留。
+ * 单块字符上限。
  *
- * profile 是所属笔记名（如「NestJS-01 项目与模块」），会作为标题路径的
- * 首段前缀到每个 chunk，使片段脱离文档后仍能自述出处。
+ * Dify 对超过 max_tokens 的块会硬切，而硬切不认代码围栏——实测有 17.6%
+ * 的分段因此出现半截代码（一段以代码结尾、下一段以剩余代码开头，两段都
+ * 无法独立作答）。所以必须由我们在安全位置预先切开，不劳 Dify 动手。
+ *
+ * 实测 Dify 的硬切阈值为约 800 字符，这里取 700 留出余量。
  */
-export function coarsenForChunking(markdown, { profile = '', ...options } = {}) {
-  return splitIntoSections(markdown, options)
-    .map((section) => {
-      const path = headingPath(profile, section)
-      return path ? `【${path}】\n${section}` : section
+export const DEFAULT_CHUNK_CHARS = 700
+
+/**
+ * 把章节拆成「单元」，供装箱阶段使用。
+ *
+ * - 正文行：自由切分，打包成不超过 limit 的单元
+ * - 代码块：原子单元；若自身超限，则等分为若干块，且每块都补齐围栏
+ *   （等分而非尽量装満，避免尾部只剩几行而变成无信息碎片）
+ */
+function toUnits(section, limit) {
+  const lines = section.split('\n')
+  const units = []
+  let inFence = false
+  let fenceMark = '```'
+  let textBuf = []
+  let codeBuf = []
+
+  // 正文行打包成不超过 limit 的单元
+  const flushText = () => {
+    if (!textBuf.length) return
+    let cur = []
+    let len = 0
+    for (const line of textBuf) {
+      const add = cur.length ? line.length + 1 : line.length
+      if (len + add > limit && cur.length) {
+        units.push(cur.join('\n'))
+        cur = []
+        len = 0
+      }
+      cur.push(line)
+      len += cur.length > 1 ? line.length + 1 : line.length
+    }
+    if (cur.length) units.push(cur.join('\n'))
+    textBuf = []
+  }
+
+  const flushCode = () => {
+    if (!codeBuf.length) return
+    const opener = codeBuf[0]
+    const closed = /^\s*(`{3,}|~{3,})\s*$/.test(codeBuf[codeBuf.length - 1]) && codeBuf.length > 1
+    const body = closed ? codeBuf.slice(1, -1) : codeBuf.slice(1)
+    const full = codeBuf.join('\n')
+
+    if (full.length <= limit || body.length === 0) {
+      units.push(full)
+    } else {
+      // 等分为若干块，使每块大小接近，不开空壳
+      const parts = Math.ceil(full.length / limit)
+      const per = Math.ceil(body.length / parts)
+      for (let i = 0; i < body.length; i += per) {
+        const slice = body.slice(i, i + per)
+        units.push([opener, ...slice, fenceMark].join('\n'))
+      }
+    }
+    codeBuf = []
+  }
+
+  for (const line of lines) {
+    const fence = line.match(/^\s*(`{3,}|~{3,})/)
+
+    if (!inFence) {
+      if (fence) {
+        flushText()
+        inFence = true
+        fenceMark = fence[1]
+        codeBuf = [line]
+      } else {
+        textBuf.push(line)
+      }
+      continue
+    }
+
+    codeBuf.push(line)
+    if (fence && line.trim().startsWith(fenceMark)) {
+      inFence = false
+      flushCode()
+    }
+  }
+
+  if (inFence) {
+    // 围栏未闭合：当普通文本处理，不强行补围栏
+    textBuf.push(...codeBuf)
+    codeBuf = []
+  }
+  flushText()
+  flushCode()
+
+  return units.filter((u) => u.trim())
+}
+
+/**
+ * 粗化：把章节切成与章节对齐、且不超 limit 的块，再用 CHUNK_MARKER 拼接。
+ *
+ * 为什么要自己切（不能交给 Dify）：Dify 对超过 max_tokens 的块会硬切，
+ * 而硬切不认代码围栏——实测有 17.6% 的分段因此出现半截代码，两段都
+ * 无法独立作答。自己在安全位置切开，就能让每块的围栏都成对。
+ *
+ * profile 是所属笔记名（如「NestJS-01 项目与模块」），作为标题路径前缀
+ * 到该章节的第一块上，使片段脱离文档后仍能自述出处。
+ */
+export function coarsenForChunking(
+  markdown,
+  { profile = '', limit = DEFAULT_CHUNK_CHARS, ...options } = {}
+) {
+  const pieces = []
+
+  for (const section of splitIntoSections(markdown, options)) {
+    // 贪心装箱：尽量装满但不超限，只在单元边界处断开
+    const packed = []
+    let cur = ''
+    const flush = () => {
+      if (cur.trim()) packed.push(cur.trim())
+      cur = ''
+    }
+
+    for (const unit of toUnits(section, limit)) {
+      const candidate = cur ? `${cur}\n${unit}` : unit
+      if (candidate.length <= limit || !cur.trim()) {
+        cur = candidate
+      } else {
+        flush()
+        cur = unit
+      }
+    }
+    flush()
+
+    // 尾部过短则并回上一块：Dify 实测硬切阈值约 800 字，limit 默认 700，
+    // 还有余量；并回能避免出现「## 4. 路由」这类只有标题的孤立碎片
+    if (packed.length > 1 && packed[packed.length - 1].length < 80) {
+      const tail = packed.pop()
+      packed[packed.length - 1] += `\n${tail}`
+    }
+
+    // 开头的短块（常见于「标题行」与其后长代码被分开安放）向前并入下一块。
+    // 标题紧跟其正文才有意义，单独成块既无信息量又会白白占一个检索名额。
+    if (packed.length > 1 && packed[0].length < 80) {
+      const head = packed.shift()
+      packed[0] = `${head}\n${packed[0]}`
+    }
+
+    const path = headingPath(profile, section)
+    packed.forEach((body, i) => {
+      // 标题路径只加在第一块上，续块靠内容自行衔接
+      pieces.push(i === 0 && path ? `【${path}】\n${body}` : body)
     })
-    .join(CHUNK_MARKER)
+  }
+
+  return pieces.join(CHUNK_MARKER)
 }
 
 /**
