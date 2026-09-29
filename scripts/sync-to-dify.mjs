@@ -109,6 +109,13 @@ if (DIFY_API_KEY?.startsWith('app-')) {
 // tokens=0——外表看文档都在，实际一个向量都没建，检索自然全部落空。
 const SERIAL_INDEX = !hasFlag('no-serial')
 const INDEX_WAIT_MS = Number(process.env.DIFY_INDEX_WAIT_MS || 600_000)
+// 遇到供应商限流（429）时的重试次数与退避基数。
+// 单篇大文档（如 100KB 的微信小程序笔记）会被切成上百个分段，Dify 并发调用
+// embedding 接口时极易撞上限流；退避重试是唯一可行的应对。
+const LIMIT_RETRIES = Number(process.env.DIFY_LIMIT_RETRIES || 4)
+const RETRY_BASE_MS = Number(process.env.DIFY_RETRY_BASE_MS || 45_000)
+// 两篇文档之间的额外停顿，给供应商的速率配额一点恢复时间
+const BETWEEN_DOCS_MS = Number(process.env.DIFY_BETWEEN_DOCS_MS || 10_000)
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
