@@ -72,12 +72,15 @@ const AUDIT = hasFlag('audit')
 const STRUCTURE = argv.includes('--structure') ? '' : (getOption('structure') ?? null)
 // --datasets：列出账号下所有知识库，确认应用绑定的究竟是哪一个
 const LIST_DATASETS = hasFlag('datasets')
+// --no-serial：跳过「逐篇等索引完成」，恢复批量提交（快但易触发 embedding 限流）
 // --dataset：打印知识库配置（embedding 模型、索引方式、文档统计）
 const SHOW_DATASET = hasFlag('dataset')
 const THROTTLE_MS = Number(process.env.DIFY_THROTTLE_MS || 6500)
-// Dify 默认把每个空行段落切成独立 chunk，导致命中片段过碎（实测平均仅 84 字）。
-// 改用 custom 分段规则，让相邻段落合并且到上限，保证每个 chunk 自带完整上下文。
-const MAX_TOKENS = Number(process.env.DIFY_MAX_TOKENS || 800)
+// 分段规则里的 max_tokens。注意它不是合并目标——Dify 严格按 separator 切分且
+// 不合并相邻块，max_tokens 只是「单块超过此上限就硬切」的阈值。所以粗分段靠
+// 输入文本侧的 coarsenForChunking，而这里保持略高于我们自己的 limit（700 字），
+// 避免 Dify 对同一块二次硬切造成代码截断。
+const MAX_TOKENS = Number(process.env.DIFY_MAX_TOKENS || 2400)
 const PAGE_SIZE = 100
 const REQUEST_TIMEOUT_MS = 120_000
 
@@ -99,6 +102,13 @@ if (DIFY_API_KEY?.startsWith('app-')) {
   console.error('   请到 Dify 控制台 → 知识库 → API 密钥，生成 dataset- 开头的密钥。')
   process.exit(1)
 }
+
+// 每篇提交后等待索引完成：Dify 会把整个文档切成很多分段并并发调用 embedding
+// 接口，而 embedding 供应商（如阿里云百炼）有速率限制。一次提交多篇会让
+// 并发请求撞上 429 Throttling.RateQuota，结果是全部文档 indexing=error、
+// tokens=0——外表看文档都在，实际一个向量都没建，检索自然全部落空。
+const SERIAL_INDEX = !hasFlag('no-serial')
+const INDEX_WAIT_MS = Number(process.env.DIFY_INDEX_WAIT_MS || 600_000)
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -622,6 +632,42 @@ async function inspectSegments(keyword) {
   }
 }
 
+/**
+ * 等待单篇文档索引完成。
+ * 返回 'completed' | 'error' | 'timeout'，并附上 Dify 记录的错误原因。
+ */
+async function waitForDocument(documentId, { maxWaitMs = INDEX_WAIT_MS, cycleMs = 8_000 } = {}) {
+  const deadline = Date.now() + maxWaitMs
+  while (Date.now() < deadline) {
+    try {
+      const docs = await request(`/datasets/${DIFY_DATASET_ID}/documents?page=1&limit=100`)
+      const hit = (docs?.data ?? []).find((d) => d.id === documentId)
+      if (hit) {
+        const st = hit.indexing_status
+        if (st === 'completed' || st === 'error') {
+          const err = hit.error
+            ? String(typeof hit.error === 'string' ? hit.error : JSON.stringify(hit.error))
+            : null
+          return { state: st, error: err ? err.slice(0, 300) : null }
+        }
+      }
+    } catch {
+      /* 网络抖动：继续轮询 */
+    }
+    await sleep(cycleMs)
+  }
+  return { state: 'timeout', error: null }
+}
+
+/**
+ * 从 Dify 的错误信息里识别供应商限流。
+ * 命中后应拉长等待再重试，而不是把它当成普通失败。
+ */
+function isRateLimited(errorText) {
+  if (!errorText) return false
+  return /429|Throttling|RateQuota|rate limit/i.test(errorText)
+}
+
 // ────────────────────────────── 文档准备 ──────────────────────────────
 
 /** 用 git 过滤出指定 ref 之后改动过的文件；git 不可用时退化为全量 */
@@ -1132,6 +1178,9 @@ async function main() {
   console.log(`   模式：${MERGE ? '分片（同目录合并）' : '逐文件'}${DRY_RUN ? ' + DRY-RUN 不写入' : ''}${PRUNE ? ' + 清理远端多余文档' : ''}`)
   console.log(`   分段：custom 规则，上限 ${MAX_TOKENS} tokens（Dify 默认不合并段落，碎片会拉低检索质量）`)
   console.log(`   节流：${THROTTLE_MS}ms/请求（约 ${Math.floor(60000 / THROTTLE_MS)} 次/分钟）`)
+  console.log(
+    `   索引：${SERIAL_INDEX ? '逐篇提交并等待完成（规避 embedding 限流）' : '批量提交（--no-serial）'}`
+  )
   console.log(`   规模：${sources.length} 个源文件 → ${documents.length} 篇文档`)
 
   if (documents.length > 50) {
@@ -1186,20 +1235,43 @@ async function main() {
     }
 
     try {
-      if (existing) {
-        const res = await updateByText(existing.id, doc.name, doc.text)
+      let documentId = existing?.id ?? null
+      if (documentId) {
+        const res = await updateByText(documentId, doc.name, doc.text)
         result.updated++
         if (res?.batch) result.touched.push([res.batch, doc.name])
-        console.log(`${label}  ✅ 已更新  ${sizeKb} KB${mergedNote}`)
+        console.log(`${label}  ✅ 已提交  ${sizeKb} KB${mergedNote}`)
       } else {
         const res = await createByText(doc.name, doc.text)
-        const documentId = res?.document?.id
+        documentId = res?.document?.id ?? null
         if (res?.batch) result.touched.push([res.batch, doc.name])
         remote.set(doc.name, { id: documentId, name: doc.name })
         result.created++
-        console.log(`${label}  ✅ 已创建  ${sizeKb} KB${mergedNote}`)
+        console.log(`${label}  ✅ 已提交  ${sizeKb} KB${mergedNote}`)
       }
       result.bytes += Buffer.byteLength(doc.text)
+
+      // 等这篇索引完成再提交下一篇，避开 embedding 供应商的速率限制
+      if (SERIAL_INDEX && documentId) {
+        process.stdout.write('        索引中…')
+        const { state, error } = await waitForDocument(documentId)
+        if (state === 'completed') {
+          process.stdout.write(' 完成\n')
+        } else if (state === 'error') {
+          process.stdout.write(' 失败\n')
+          const limited = isRateLimited(error)
+          console.log(
+            `        ❗ ${limited ? 'embedding 供应商限流（429）' : '索引失败'}：${error || '(无详情)'}`
+          )
+          if (limited) {
+            console.log('        → 建议加大 DIFY_INDEX_WAIT_MS 后重跑；脚本会逐篇等待以免再次限流')
+          }
+          result.failed.push({ name: doc.name, error: `索引失败：${error || '未知'}` })
+        } else {
+          process.stdout.write(' 超时\n')
+          console.log(`        索引仍在后台进行，可稍后用 --audit 复查`)
+        }
+      }
     } catch (error) {
       // 远端已存在同名文档但列表未反映 → 退回更新
       const isConflict = error.status === 409 || /already exists/i.test(error.message)
