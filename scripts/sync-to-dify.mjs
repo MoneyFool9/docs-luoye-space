@@ -1086,7 +1086,15 @@ async function analyzeStructure(keyword) {
       if (fences % 2 === 1) {
         brokenFence++
         dBroken++
-        worst.push({ doc: doc.name, len: c.length, head: c.replace(/\s+/g, ' ').slice(0, 70) })
+        worst.push({
+          doc: doc.name,
+          len: c.length,
+          fences,
+          head: c.replace(/\s+/g, ' ').slice(0, 70),
+          // 原样保留换行，用 ⏎ 显形，便于看清到底断在哪里
+          rawStart: c.slice(0, 110).replace(/\n/g, '⏎'),
+          rawEnd: c.slice(-110).replace(/\n/g, '⏎'),
+        })
       }
 
       // 不以标题开头 → 脱离了小节上下文（可能只是被切断的后半段）
@@ -1127,11 +1135,26 @@ async function analyzeStructure(keyword) {
   console.log(`   几乎纯代码无说明      ${codeOnly}  (${pct(codeOnly)}%)`)
 
   if (worst.length > 0) {
-    console.log('\n═══ 断裂样例（前 6）═══')
-    worst.slice(0, 6).forEach((w) => {
-      console.log(`   [${w.len}字] ${w.doc}`)
-      console.log(`      ${w.head}`)
+    console.log('\n═══ 断裂样例（前 4，含原文首尾）═══')
+    worst.slice(0, 4).forEach((w) => {
+      console.log(`   [${w.len}字, ${w.fences} 个围栏] ${w.doc}`)
+      console.log(`      首: ${w.rawStart}`)
+      console.log(`      尾: ${w.rawEnd}`)
+      console.log('')
     })
+
+    // 断裂分段的长度分布：若集中在某个区间，说明是 Dify 的二次切分所致
+    const wl = worst.map((w) => w.len).sort((a, b) => a - b)
+    const buckets = { '<300': 0, '300-500': 0, '500-700': 0, '>=700': 0 }
+    wl.forEach((n) => {
+      if (n < 300) buckets['<300']++
+      else if (n < 500) buckets['300-500']++
+      else if (n < 700) buckets['500-700']++
+      else buckets['>=700']++
+    })
+    console.log('   ── 断裂分段长度分布 ──')
+    console.log(`      最短 ${wl[0]} | 中位 ${wl[Math.floor(wl.length / 2)]} | 最长 ${wl[wl.length - 1]}`)
+    Object.entries(buckets).forEach(([k, v]) => console.log(`      ${k.padEnd(9)} ${v}`))
   }
 
   console.log('\n═══ 结论 ═══')
